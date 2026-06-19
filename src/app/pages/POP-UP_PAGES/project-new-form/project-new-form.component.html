@@ -1,0 +1,42 @@
+<div class="tabs-demo view-wrapper">
+  <div class="widget-container">
+    <div class="employee-header">
+      <label>Project Master</label>
+    </div>
+
+    <div class="employee-details" style="display: flex; flex-direction: column; gap: 15px; padding: 20px;">
+      <dx-text-box
+        [(value)]="newProjectData.ProjectCode"
+        label="Project Code"
+        hint="Project Code"
+      >
+        <dx-validator>
+          <dxi-validation-rule
+            type="required"
+            message="Project Code is required"
+          ></dxi-validation-rule>
+        </dx-validator>
+      </dx-text-box>
+
+      <dx-text-box
+        [(value)]="newProjectData.ProjectName"
+        label="Project Name"
+        hint="Project Name"
+      >
+        <dx-validator>
+          <dxi-validation-rule
+            type="required"
+            message="Project Name is required"
+          ></dxi-validation-rule>
+        </dx-validator>
+      </dx-text-box>
+
+      <dx-check-box
+        [(value)]="newProjectData.IsInactive"
+        text="Is Inactive"
+        stylingMode="outlined"
+        hint="Is Inactive"
+      ></dx-check-box>
+    </div>
+  </div>
+</div>

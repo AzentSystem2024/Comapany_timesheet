@@ -1,0 +1,126 @@
+<div class="view-wrapper list-page">
+  <dx-data-grid
+    class="grid theme-dependent"
+    noDataText=""
+    height="600"
+    [dataSource]="datasource"
+    [showBorders]="true"
+    [allowColumnResizing]="true"
+    [allowColumnReordering]="true"
+    [rowAlternationEnabled]="true"
+    rowAlternationInterval="2"
+    (onEditingStart)="onEditingRow($event)"
+    (onRowRemoving)="onRowRemoving($event)"
+    height="82vh"
+  >
+    <dxo-paging [pageSize]="10"></dxo-paging>
+    <dxo-editing
+      mode="popup"
+      [allowUpdating]="menuPrevilage.CanEdit"
+      [allowDeleting]="menuPrevilage.CanDelete"
+    >
+    </dxo-editing>
+    <dxo-pager
+      [visible]="true"
+      [allowedPageSizes]="allowedPageSizes"
+      [displayMode]="displayMode"
+      [showPageSizeSelector]="showPageSizeSelector"
+      [showInfo]="showInfo"
+      [showNavigationButtons]="showNavButtons"
+    ></dxo-pager>
+    <dxo-load-panel [showPane]="false"></dxo-load-panel>
+    <dxo-scrolling mode="virtual"></dxo-scrolling>
+    <dxo-sorting mode="multiple"></dxo-sorting>
+    <dxo-header-filter [visible]="isFilterRowVisible">
+      <dxo-search [enabled]="true"></dxo-search>
+    </dxo-header-filter>
+    <dxo-filter-row [visible]="isFilterRowVisible"></dxo-filter-row>
+    <dxo-column-chooser [enabled]="true" [height]="400"></dxo-column-chooser>
+    <dxo-search-panel [visible]="true" placeholder=" Search"></dxo-search-panel>
+    <dxo-export
+      [enabled]="true"
+      [allowExportSelectedData]="false"
+      [formats]="['xlsx']"
+    >
+    </dxo-export>
+
+    <dxo-toolbar>
+      <dxi-item location="before">
+        <div class="grid-header">Time Sheet</div>
+      </dxi-item>
+      <dxi-item
+        location="after"
+        locateInMenu="auto"
+        showText="inMenu"
+        widget="dxButton"
+        [options]="{
+          icon: isFilterRowVisible ? 'filter' : 'filter',
+          hint: isFilterRowVisible ? 'Hide Filter Row' : 'Show Filter Row',
+          onClick: toggleFilterRow,
+          stylingMode: 'text',
+          elementAttr: { class: 'commonButtons' }
+        }"
+      ></dxi-item>
+      <dxi-item
+        location="after"
+        locateInMenu="auto"
+        showText="inMenu"
+        widget="dxButton"
+        [options]="{
+          text: 'Refresh',
+          icon: 'refresh',
+          stylingMode: 'text',
+          hint: 'refresh',
+          onClick: refresh,
+
+        }"
+      ></dxi-item>
+
+      <dxi-item
+        name="exportButton"
+        location="after"
+        cssClass="custom-export-button"
+      ></dxi-item>
+      <dxi-item
+        location="after"
+        widget="dxButton"
+        [options]="addButtonOptions"
+      ></dxi-item>
+    </dxo-toolbar>
+
+    <dxi-column dataField="TimesheetId" caption="Timesheet Id"></dxi-column>
+    <dxi-column dataField="Project_Id" caption="Project Id"></dxi-column>
+    <dxi-column dataField="Activity_Id" caption="Activity Id"></dxi-column>
+    <dxi-column dataField="Remarks" caption="Remarks."></dxi-column>
+    <dxi-column dataField="Mintes" caption="Mintes."></dxi-column>
+
+    <dxi-column type="buttons">
+    <dxi-button
+      name="edit"
+      [visible]="menuPrevilage.CanEdit"
+    ></dxi-button>
+  </dxi-column>
+  </dx-data-grid>
+  <form-popup
+    class="formPopupClass"
+    [(visible)]="isAddFormPopupOpened"
+    titleText="New Time Sheet"
+    [height]="'100vh'"
+    [width]="popupwidth"
+    (save)="onClickSaveNewData()"
+    (clear)="onClearData()"
+  >
+    <app-time-sheet-new-form></app-time-sheet-new-form>
+  </form-popup>
+  <dx-popup
+    [(visible)]="isEditPopupOpened"
+    title="Edit Time Sheet"
+    [height]="'100vh'"
+    [width]="popupwidth"
+  >
+    <app-time-sheet-edit-form
+      [formdata]="selectedRowData"
+      (closeForm)="CloseEditForm()"
+    ></app-time-sheet-edit-form>
+  </dx-popup>
+</div>

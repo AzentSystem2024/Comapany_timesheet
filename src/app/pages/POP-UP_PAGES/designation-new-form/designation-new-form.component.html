@@ -1,0 +1,22 @@
+<div class="tabs-demo view-wrapper">
+  <div class="widget-container">
+    <div class="employee-header">
+      <label>Designation Master</label>
+    </div>
+
+    <div class="employee-details" style="display: flex; flex-direction: column; gap: 15px; padding: 20px;">
+      <dx-text-box
+        [(value)]="newDesignationData.Designation"
+        label="Designation Name"
+        hint="Designation Name"
+      >
+        <dx-validator>
+          <dxi-validation-rule
+            type="required"
+            message="Designation is required"
+          ></dxi-validation-rule>
+        </dx-validator>
+      </dx-text-box>
+    </div>
+  </div>
+</div>

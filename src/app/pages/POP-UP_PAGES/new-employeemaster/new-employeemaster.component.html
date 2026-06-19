@@ -1,0 +1,178 @@
+<div class="tabs-demo view-wrapper">
+  <div class="widget-container">
+    <div class="employee-header">
+      <label>Employee Master Details:</label>
+    </div>
+
+    <div class="employee-details">
+      <div class="form-column">
+        <dx-text-box
+          [(value)]="newEmployeeData.Employee_Number"
+          label="Employee No"
+          hint="Employee No"
+        >
+          <dx-validator>
+            <dxi-validation-rule
+              type="required"
+              message="Employee No is required"
+            ></dxi-validation-rule>
+          </dx-validator>
+        </dx-text-box>
+
+        <dx-text-box
+          [(value)]="newEmployeeData.Enrollment_No"
+          label="Enrollment No"
+          hint="Enrollment No"
+        ></dx-text-box>
+
+        <dx-text-box
+          [(value)]="newEmployeeData.EmployeeName"
+          label="Employee Name"
+          hint="Employee Name"
+          (input)="onEmployeeNameInput($event)"
+        >
+          <dx-validator>
+            <dxi-validation-rule
+              type="required"
+              message="Employee Name is required"
+            ></dxi-validation-rule>
+          </dx-validator>
+        </dx-text-box>
+
+        <dx-text-area
+          [(value)]="newEmployeeData.Address1"
+          label="Address"
+          hint="Address"
+          [height]="80"
+        ></dx-text-area>
+      </div>
+
+      <div class="form-column">
+        <dx-text-box
+          [(value)]="newEmployeeData.Mobile"
+          label="Mobile No."
+          hint="Mobile No."
+          [maxLength]="17"
+          (input)="onPhoneInput($event, 'Mobile')"
+        >
+          <dx-validator>
+            <dxi-validation-rule
+              type="required"
+              message="Mobile No is required"
+            ></dxi-validation-rule>
+          </dx-validator>
+        </dx-text-box>
+
+        <dx-text-box
+          [(value)]="newEmployeeData.WhatsappNo"
+          label="Whatsapp"
+          hint="Whatsapp"
+          [maxLength]="17"
+          (input)="onPhoneInput($event, 'WhatsappNo')"
+        ></dx-text-box>
+
+        <dx-text-box
+          [(value)]="newEmployeeData.Emailid"
+          label="Email"
+          hint="Email"
+        >
+          <dx-validator>
+            <dxi-validation-rule
+              type="email"
+              message="Enter a valid Email"
+            ></dxi-validation-rule>
+            <dxi-validation-rule
+              type="pattern"
+              [pattern]="emailPattern"
+              message="Email must contain @ and end with .com"
+            ></dxi-validation-rule>
+          </dx-validator>
+        </dx-text-box>
+
+        <dx-text-box
+          [(value)]="newEmployeeData.AlternateContactNo"
+          label="Alternate Contact No."
+          hint="Alternate Contact No."
+          [maxLength]="17"
+          (input)="onPhoneInput($event, 'AlternateContactNo')"
+        ></dx-text-box>
+      </div>
+
+      <div class="form-column">
+        <dx-number-box
+          [(value)]="newEmployeeData.DesignationID"
+          label="Designation Id"
+          hint="Designation Id"
+        ></dx-number-box>
+
+        <dx-select-box
+          [(value)]="newEmployeeData.sex"
+          [items]="sexOptions"
+          label="Sex"
+          placeholder="Select Sex"
+          hint="Sex"
+        ></dx-select-box>
+
+        <dx-date-box
+          [(value)]="newEmployeeData.DateOfBirth"
+          label="Date of Birth"
+          type="date"
+          [displayFormat]="'dd/MM/yyyy'"
+          placeholder="Select Date of Birth"
+          stylingMode="outlined"
+          hint="Date of Birth"
+          [max]="maxDateOfBirth"
+        >
+          <dx-validator>
+            <dxi-validation-rule
+              type="required"
+              message="Date of Birth is required"
+            ></dxi-validation-rule>
+            <dxi-validation-rule
+              type="range"
+              [max]="maxDateOfBirth"
+              message="Employee must be at least 18 years old"
+            ></dxi-validation-rule>
+          </dx-validator>
+        </dx-date-box>
+
+        <dx-date-box
+          [(value)]="newEmployeeData.DateOfJoin"
+          label="Date of Join"
+          type="date"
+          [displayFormat]="'dd/MM/yyyy'"
+          placeholder="Select Date of Join"
+          stylingMode="outlined"
+          hint="Date of Join"
+        ></dx-date-box>
+
+        <dx-check-box
+          [(value)]="newEmployeeData.IsWorking"
+          text="Is Working"
+          stylingMode="outlined"
+          hint="Is Working"
+        ></dx-check-box>
+
+        <dx-date-box
+          [(value)]="newEmployeeData.DateofRelieving"
+          label="Date of Relieving"
+          type="date"
+          [displayFormat]="'dd/MM/yyyy'"
+          placeholder="Select Date of Relieving"
+          stylingMode="outlined"
+          hint="Date of Relieving"
+          [disabled]="newEmployeeData.IsWorking"
+        ></dx-date-box>
+      </div>
+    </div>
+
+    <div class="remarks-field">
+      <dx-text-area
+        [(value)]="newEmployeeData.Remarks"
+        label="Remarks"
+        hint="Remarks"
+        [height]="80"
+      ></dx-text-area>
+    </div>
+  </div>
+</div>

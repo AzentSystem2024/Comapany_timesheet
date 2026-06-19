@@ -1,0 +1,63 @@
+<div class="dx-theme-fluent dx-theme-fluent">
+  <dx-validation-group #validationGroup>
+    <div class="view-wrapper topDiv d-flex mb-2 mt-0 flex-wrap">
+      <div class="headDiv d-flex align-items-center m-0 p-0 w-100 flex-wrap">
+        
+        <div class="inputBox ms-3 mt-3">
+          <dx-text-box
+            [(value)]="newUserData.TimesheetId"
+            label="Timesheet Id"
+            labelMode="floating"
+          >
+            <dx-validator>
+              <dxi-validation-rule type="required" message="Timesheet Id is required"></dxi-validation-rule>
+            </dx-validator>
+          </dx-text-box>
+        </div>
+
+        <div class="inputBox ms-3 mt-3">
+          <dx-text-box
+            [(value)]="newUserData.Project_Id"
+            label="Project Id"
+            labelMode="floating"
+          >
+          </dx-text-box>
+        </div>
+
+        <div class="inputBox ms-3 mt-3">
+          <dx-text-box
+            [(value)]="newUserData.Activity_Id"
+            label="Activity Id"
+            labelMode="floating"
+          >
+          </dx-text-box>
+        </div>
+
+        <div class="inputBox ms-3 mt-3">
+          <dx-text-box
+            [(value)]="newUserData.Remarks"
+            label="Remarks"
+            labelMode="floating"
+          >
+            <dx-validator>
+              <dxi-validation-rule type="required" message="Remarks are required"></dxi-validation-rule>
+            </dx-validator>
+          </dx-text-box>
+        </div>
+
+        <div class="inputBox ms-3 mt-3">
+          <dx-number-box
+            [(value)]="newUserData.Mintes"
+            label="Minutes"
+            labelMode="floating"
+          >
+            <dx-validator>
+              <dxi-validation-rule type="required" message="Minutes are required"></dxi-validation-rule>
+            </dx-validator>
+          </dx-number-box>
+        </div>
+
+      </div>
+    </div>
+  </dx-validation-group>
+</div>
