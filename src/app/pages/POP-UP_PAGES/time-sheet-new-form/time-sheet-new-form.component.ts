@@ -112,7 +112,6 @@ export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked {
   totalRowCount: number = 0;
   userList: any;
 
-  // Radio button options
   userTypes = ['Normal User', 'Clinician'];
   gender: any;
   userRole: any;

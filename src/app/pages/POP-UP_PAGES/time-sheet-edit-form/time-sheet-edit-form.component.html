@@ -5,6 +5,30 @@
         
         <div class="inputBox ms-3 mt-3">
           <dx-text-box
+            [(value)]="newUserData.EmployeeId"
+            label="Employee Id"
+            labelMode="floating"
+          >
+            <dx-validator>
+              <dxi-validation-rule type="required" message="Employee Id is required"></dxi-validation-rule>
+            </dx-validator>
+          </dx-text-box>
+        </div>
+
+        <div class="inputBox ms-3 mt-3">
+          <dx-date-box
+            [(value)]="newUserData.TimeSheetDate"
+            label="Time Sheet Date"
+            labelMode="floating"
+          >
+            <dx-validator>
+              <dxi-validation-rule type="required" message="Time Sheet Date is required"></dxi-validation-rule>
+            </dx-validator>
+          </dx-date-box>
+        </div>
+
+        <div class="inputBox ms-3 mt-3">
+          <dx-text-box
             [(value)]="newUserData.TimesheetId"
             label="Timesheet Id"
             labelMode="floating"
