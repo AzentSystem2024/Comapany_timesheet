@@ -24,6 +24,10 @@ export class CardAuthComponent {
       this.router.url.includes('two-step-verification')
     );
   }
+
+  get isCreateAccountPage(): boolean {
+    return this.router.url.includes('create-account');
+  }
   
   redirectToLogin() {
     this.router.navigateByUrl('auth/login');

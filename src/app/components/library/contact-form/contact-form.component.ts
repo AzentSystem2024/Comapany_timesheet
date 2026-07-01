@@ -14,10 +14,8 @@ import {
   DxValidationGroupModule,
 } from 'devextreme-angular';
 import {
-  ContactStatusModule,
   FormTextboxModule,
   FormPhotoModule,
-  StatusSelectBoxModule,
 } from 'src/app/components';
 import { Contact } from 'src/app/types/contact';
 import { ValidationRule } from 'devextreme-angular/common';
@@ -68,12 +66,11 @@ export class ContactFormComponent {
     DxValidationGroupModule,
 
     FormTextboxModule,
-    ContactStatusModule,
+    FormTextboxModule,
     FormPhotoModule,
     DxValidatorModule,
     ToolbarFormModule,
     CommonModule,
-    StatusSelectBoxModule,
   ],
   providers: [],
   exports: [ContactFormComponent],

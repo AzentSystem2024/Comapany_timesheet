@@ -38,19 +38,16 @@ export class DataService {
     }
   }
 
-  // =============== get dashboard chart data list ===============
   fetch_chart_data_List(payload: any) {
     const url = `${this.BaseURL}Dashboard/getDashboardData`;
     const reqBody = payload;
     return this.http.post(url, reqBody);
   }
 
-  //=================DAte format changing to needed format========
   formatDateTime(date: string): string {
     return formatDate(new Date(date), 'dd-MMM-yyyy hh:mm a', 'en-US');
   }
 
-  //===============Fetch claim details drill down values===========
   set_pageLoading_And_Closing_Log(Action: any, PageName: any) {
     const userid = sessionStorage.getItem('UserID');
     const currentPathName = PageName;
@@ -65,7 +62,6 @@ export class DataService {
     return this.http.post(url, reqBody);
   }
 
-  //==================dashboard facility sync details data==========
   get_Last_SyncDate_Details(facilityid: any) {
     const url = `${this.BaseURL}Facility/getLastTransactionDate`;
     const reqBody = {
@@ -74,7 +70,6 @@ export class DataService {
     return this.http.post(url, reqBody);
   }
 
-  //==================dashboard facility sync details data==========
   get_UserWise_FacilityList_Data() {
     const userid = sessionStorage.getItem('UserID');
     console.log(userid)

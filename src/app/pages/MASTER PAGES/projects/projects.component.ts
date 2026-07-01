@@ -39,7 +39,7 @@ export class ProjectsComponent {
   @ViewChild(ProjectNewFormComponent, { static: false })
   projectNewForm!: ProjectNewFormComponent;
 
-  popupwidth: any = '65%';
+  popupwidth: any = '35%';
   isAddFormPopupOpened: boolean = false;
   isEditPopupOpened: boolean = false;
   selectedRowData: any;
@@ -52,13 +52,21 @@ export class ProjectsComponent {
   isFilterRowVisible: boolean = false;
   currentPathName: string;
   initialized: boolean;
-  menuPrevilage: { CanAdd: boolean; CanEdit: boolean; CanDelete: boolean };
+  isAdmin: boolean = false;
+  menuPrevilage: { CanAdd: boolean; CanEdit: boolean; CanDelete: boolean } = { CanAdd: false, CanEdit: false, CanDelete: false };
+  employeeDataSource: any[] = [];
 
   datasource = new DataSource<any>({
     load: () =>
       new Promise((resolve, reject) => {
-        const storedData = JSON.parse(localStorage.getItem('ProjectMasterData') || '[]');
-        resolve(storedData);
+        this.service.get_Project_List().subscribe({
+          next: (res: any) => {
+            const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+            let data = res;
+            resolve(data);
+          },
+          error: (err: any) => reject(err),
+        });
       }),
   });
 
@@ -73,18 +81,33 @@ export class ProjectsComponent {
     this.route.url.subscribe((segments) => {
       const fullUrl = segments.map((s) => s.path).join('/');
       console.log(fullUrl);
-      this.menuPrevilage = this.dataService.getMenuPrevilages(fullUrl);
+      this.menuPrevilage = this.dataService.getMenuPrevilages(fullUrl) || { CanAdd: false, CanEdit: false, CanDelete: false };
+
+      const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+      this.isAdmin = logData.UserRoleName === 'Administrator';
+
+      this.addButtonOptions = {
+        text: 'New',
+        icon: 'bi bi-plus-circle',
+        type: 'default',
+        stylingMode: 'contained',
+        hint: 'Add new entry',
+        disabled: false,
+        visible: true,
+        onClick: () => this.show_new_Form(),
+        elementAttr: { class: 'add-button' },
+      };
     });
-    this.addButtonOptions = {
-      text: 'New',
-      icon: 'bi bi-plus-circle',
-      type: 'default',
-      stylingMode: 'contained',
-      hint: 'Add new entry',
-      disabled: !this.menuPrevilage.CanAdd,
-      onClick: () => this.show_new_Form(),
-      elementAttr: { class: 'add-button' },
-    };
+
+    this.service.get_Employee_List().subscribe({
+      next: (res: any) => {
+        if (res && res.data) {
+          this.employeeDataSource = res.data;
+        } else if (Array.isArray(res)) {
+          this.employeeDataSource = res;
+        }
+      }
+    });
   }
 
   toggleFilterRow = () => {
@@ -92,47 +115,58 @@ export class ProjectsComponent {
   };
 
   getProjectRowId(rowData: any) {
-    return rowData?.ProjectID ?? rowData?.ID ?? rowData?.UserID;
+    return rowData?.ProjectID ?? rowData?.ID ?? rowData?.UserID ?? rowData?.Id ?? rowData?.id;
   }
 
   onEditingRow(event: any): void {
     event.cancel = true;
     const Id = this.getProjectRowId(event.data);
     this.isEditPopupOpened = true;
-    const storedData = JSON.parse(localStorage.getItem('ProjectMasterData') || '[]');
-    this.selectedRowData = storedData.find((item: any) => this.getProjectRowId(item) === Id) || event.data;
+    const rowIndex = event.component.getRowIndexByKey(event.key);
+    this.selectedRowData = { ...event.data, SNo: rowIndex + 1 };
     this.cdr.detectChanges();
   }
 
   canShowDelete = (e: any): boolean => {
-    return (
-      this.menuPrevilage.CanDelete &&
-      e.row?.data?.UserRoleName !== 'Administrator'
-    );
+    return true;
+  };
+
+  isInactiveValue = (rowData: any): boolean => {
+    return rowData.IsInactive === 1 || rowData.IsInactive === true;
   };
 
   show_new_Form() {
     this.isAddFormPopupOpened = true;
+    this.cdr.detectChanges();
   }
 
   onClickSaveNewData() {
     const data = this.projectNewForm.getNewProjectData();
     console.log(data, 'PAYLOAD IN SAVE');
-    
-    let storedData = JSON.parse(localStorage.getItem('ProjectMasterData') || '[]');
-    data.ProjectID = new Date().getTime(); // give an ID
-    storedData.push(data);
-    localStorage.setItem('ProjectMasterData', JSON.stringify(storedData));
 
-    notify(
-      {
-        message: 'data saved successfully',
-        position: { at: 'top right', my: 'top right' },
-        displayTime: 500,
+    this.service.insert_Project_Data(data).subscribe({
+      next: (res: any) => {
+        if (res.flag == "1") {
+          notify(
+            { message: 'data saved successfully', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'success'
+          );
+          this.isAddFormPopupOpened = false;
+          this.dataGrid.instance.refresh();
+        } else {
+          notify(
+            { message: res.message || 'Failed to save data', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'error'
+          );
+        }
       },
-      'success'
-    );
-    this.dataGrid.instance.refresh();
+      error: (err: any) => {
+        notify(
+          { message: 'Server error', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+          'error'
+        );
+      }
+    });
   }
 
   onClearData() {
@@ -141,22 +175,31 @@ export class ProjectsComponent {
 
   onRowRemoving(event: any) {
     event.cancel = true;
-    let SelectedRow = event.key;
-    const Id = SelectedRow.ProjectID || SelectedRow.ID;
-    
-    let storedData = JSON.parse(localStorage.getItem('ProjectMasterData') || '[]');
-    storedData = storedData.filter((item: any) => (item.ProjectID || item.ID) !== Id);
-    localStorage.setItem('ProjectMasterData', JSON.stringify(storedData));
+    let SelectedRow = event.data || event.key;
+    const Id = this.getProjectRowId(SelectedRow);
 
-    notify(
-      {
-        message: 'Delete operation successful',
-        position: { at: 'top right', my: 'top right' },
-        displayTime: 500,
+    this.service.Remove_Project_Row_Data(Id).subscribe({
+      next: (res: any) => {
+        if (res.flag == "1") {
+          notify(
+            { message: 'Delete operation successful', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'success'
+          );
+          this.dataGrid.instance.refresh();
+        } else {
+          notify(
+            { message: res.message || 'Failed to delete', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'error'
+          );
+        }
       },
-      'success'
-    );
-    this.dataGrid.instance.refresh();
+      error: (err: any) => {
+        notify(
+          { message: 'Server error', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+          'error'
+        );
+      }
+    });
   }
 
   refresh = () => {
@@ -190,4 +233,4 @@ export class ProjectsComponent {
   ],
   declarations: [ProjectsComponent],
 })
-export class ProjectsModule {}
+export class ProjectsModule { }

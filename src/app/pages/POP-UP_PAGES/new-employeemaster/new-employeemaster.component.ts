@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, NgModule } from '@angular/core';
+import { Component, NgModule, OnInit } from '@angular/core';
+import { MasterReportService } from '../../MASTER PAGES/master-report.service';
 import {
   DxCheckBoxModule,
   DxDateBoxModule,
@@ -8,36 +9,54 @@ import {
   DxTextAreaModule,
   DxTextBoxModule,
   DxValidatorModule,
+  DxButtonModule,
 } from 'devextreme-angular';
 
 @Component({
   selector: 'app-new-employeemaster',
   templateUrl: './new-employeemaster.component.html',
-  styleUrl: './new-employeemaster.component.scss',
+  styleUrls: ['./new-employeemaster.component.scss'],
 })
-export class NewEmployeemasterComponent {
+export class NewEmployeemasterComponent implements OnInit {
   maxDateOfBirth: Date;
+  designationOptions: any[] = [];
+  passwordMode: 'password' | 'text' = 'password';
+  passwordButtonOptions: any = {
+    icon: 'eyeopen',
+    stylingMode: 'text',
+    onClick: () => {
+      this.passwordMode = this.passwordMode === 'text' ? 'password' : 'text';
+      this.passwordButtonOptions.icon = this.passwordMode === 'text' ? 'eyeclose' : 'eyeopen';
+    }
+  };
 
-  constructor() {
+  constructor(private masterReportService: MasterReportService) {
     const today = new Date();
     this.maxDateOfBirth = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
   }
 
+  ngOnInit(): void {
+    this.masterReportService.get_Designation_List().subscribe({
+      next: (res: any) => {
+        if (res.flag === "1" && res.data) {
+          this.designationOptions = res.data;
+        }
+      },
+      error: (err: any) => console.error("Failed to load designations", err)
+    });
+  }
+
   private defaultEmployeeData = {
-    Employee_Number: '',
-    Enrollment_No: '',
     EmployeeName: '',
-    DateOfBirth: null,
     Address1: '',
-    Mobile: '',
+    MobileNo: '',
     WhatsappNo: '',
-    Emailid: '',
-    AlternateContactNo: '',
+    EmailID: '',
+    LoginPassword: '',
     DesignationID: null,
-    sex: '',
+    Sex: null,
     DateOfJoin: null,
     IsWorking: true,
-    DateofRelieving: null,
     Remarks: '',
   };
 
@@ -58,8 +77,7 @@ export class NewEmployeemasterComponent {
     const sanitizedValue = target.value
       .replace(/[^a-zA-Z\s]/g, '')
       .replace(/\s{2,}/g, ' ')
-      .replace(/^\s+/g, '')
-      .toUpperCase();
+      .replace(/^\s+/g, '');
 
     target.value = sanitizedValue;
     this.newEmployeeData.EmployeeName = sanitizedValue;
@@ -67,7 +85,7 @@ export class NewEmployeemasterComponent {
 
   onPhoneInput(event: Event, fieldName: string): void {
     const target = event.target as HTMLInputElement;
-    const sanitizedValue = target.value.replace(/[^\d+]/g, '');
+    const sanitizedValue = target.value.replace(/\D/g, '');
 
     target.value = sanitizedValue;
     this.newEmployeeData[fieldName] = sanitizedValue;
@@ -84,6 +102,7 @@ export class NewEmployeemasterComponent {
     DxTextAreaModule,
     DxTextBoxModule,
     DxValidatorModule,
+    DxButtonModule,
   ],
   declarations: [NewEmployeemasterComponent],
   exports: [NewEmployeemasterComponent],

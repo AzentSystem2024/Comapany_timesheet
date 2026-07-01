@@ -16,8 +16,8 @@
     <dxo-paging [pageSize]="10"></dxo-paging>
     <dxo-editing
       mode="popup"
-      [allowUpdating]="menuPrevilage.CanEdit"
-      [allowDeleting]="menuPrevilage.CanDelete"
+      [allowUpdating]="true"
+      [allowDeleting]="true"
     >
     </dxo-editing>
     <dxo-pager
@@ -92,7 +92,7 @@
     <dxi-column type="buttons">
     <dxi-button
       name="edit"
-      [visible]="menuPrevilage.CanEdit"
+      [visible]="true"
     ></dxi-button>
 
     <dxi-button
@@ -105,7 +105,7 @@
     class="formPopupClass"
     [(visible)]="isAddFormPopupOpened"
     titleText="New Designation"
-    [height]="'100vh'"
+    [height]="'auto'"
     [width]="popupwidth"
     (save)="onClickSaveNewData()"
     (clear)="onClearData()"
@@ -116,7 +116,7 @@
   <dx-popup
     [(visible)]="isEditPopupOpened"
     title="Edit Designation"
-    [height]="'100vh'"
+    [height]="'auto'"
     [width]="popupwidth"
   >
     <app-designation-edit

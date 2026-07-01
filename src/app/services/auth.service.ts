@@ -45,7 +45,7 @@ export class AuthService {
     private router: Router,
     private http: HttpClient,
     private config: ConfigService,
-  ) {}
+  ) { }
 
   private get BaseURL(): string {
     return this.config.apiBaseUrl;
@@ -103,21 +103,27 @@ export class AuthService {
   }
 
   logIn(username: any, password: any, forcelogin: any) {
-    const API_URL = `${this.BaseURL}user/LOGIN`;
-    const currentUTCDateTime = new Date().toISOString();
+    const API_URL = `${this.BaseURL}Employee/login`;
     const ReqBody = {
       LoginName: username,
       Password: password,
-      LocalIP: '192.168.1.143',
-      ComputerName: 'System1',
-      DomainName: 'Domain1',
-      ComputerUser: 'User1',
-      InternetIP: '192.158.1.38',
-      SystemTimeUTC: currentUTCDateTime,
-      ForceLogin: true,
     };
-
     return this.http.post<any>(API_URL, ReqBody);
+  }
+
+  get2FASetupInfo(tempToken: string) {
+    const API_URL = `${this.BaseURL}Employee/setup-2fa`;
+    return this.http.get<any>(API_URL, {
+      headers: { Authorization: `Bearer ${tempToken}` }
+    });
+  }
+
+  verify2FA(tempToken: string, code: string, secretKey: string = '') {
+    const API_URL = `${this.BaseURL}Employee/verify-login-2fa`;
+    const ReqBody = { TempToken: tempToken, Code: code, SecretKey: secretKey };
+    return this.http.post<any>(API_URL, ReqBody, {
+      headers: { Authorization: `Bearer ${tempToken}` }
+    });
   }
 
   getMenuData() {
@@ -142,16 +148,28 @@ export class AuthService {
     }
   }
 
-  async createAccount(email: string, password: string) {
+  async createAccount(formData: any) {
     try {
-      this.router.navigate(['/auth/create-account']);
-      return {
-        isOk: true,
-      };
-    } catch {
+      const API_URL = `${this.BaseURL}Employee/insert`;
+      // Map formData to what the backend expects, though formData should already match
+      // If the form has 'password' instead of 'LoginPassword', map it:
+      if (formData.password) {
+        formData.LoginPassword = formData.password;
+      }
+      if (formData.email) {
+        formData.EmailID = formData.email;
+      }
+
+      const response: any = await this.http.post(API_URL, formData).toPromise();
+      if (response && response.flag == "1") {
+        return { isOk: true };
+      } else {
+        return { isOk: false, message: response.message || 'Failed to create account' };
+      }
+    } catch (err: any) {
       return {
         isOk: false,
-        message: 'Failed to create account',
+        message: err.message || 'Server error',
       };
     }
   }
@@ -183,7 +201,7 @@ export class AuthService {
   }
 
   logOut() {
-    const API_URL = `${this.BaseURL}user/logout`;
+    const API_URL = `${this.BaseURL}Employee/logout`;
     const token = JSON.parse(localStorage.getItem('logData') || '{}')?.Token;
     const ReqBody = { Token: token };
     return this.http.post(API_URL, ReqBody);
@@ -195,7 +213,7 @@ export class AuthGuardService implements CanActivate {
   constructor(
     private router: Router,
     private authService: AuthService,
-  ) {}
+  ) { }
 
   canActivate(route: ActivatedRouteSnapshot): boolean {
     const isLoggedIn = this.authService.isTokenValid;

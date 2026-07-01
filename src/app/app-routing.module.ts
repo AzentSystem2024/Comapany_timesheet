@@ -26,6 +26,7 @@ import { SecurityPolicyComponent } from './pages/SYSTEM PAGES/security-policy/se
 import { EmployeeMasterComponent } from './pages/MASTER PAGES/employee-master/employee-master.component';
 import { DesignationComponent } from './pages/MASTER PAGES/designation/designation.component';
 import { ProjectsComponent } from './pages/MASTER PAGES/projects/projects.component';
+import { TimesheetSummaryComponent } from './pages/REPORT PAGES/timesheet-summary/timesheet-summary.component';
 
 const routes: Routes = [
   {
@@ -84,7 +85,7 @@ const routes: Routes = [
         canActivate: [AuthGuardService],
       },
       {
-        path: 'clinician-profession',
+        path: 'timesheet',
         component: TimeSheetComponent,
         canActivate: [AuthGuardService],
       },
@@ -104,18 +105,33 @@ const routes: Routes = [
         canActivate: [AuthGuardService],
       },
       {
-        path: 'speciality',
+        path: 'projects',
         component: ProjectsComponent,
         canActivate: [AuthGuardService],
       },
       {
-        path: 'clinician-category',
+        path: 'designation',
         component: DesignationComponent,
         canActivate: [AuthGuardService],
       },
       {
         path: 'change-password',
         component: ChangePasswordComponent,
+      },
+      {
+        path: 'speciality',
+        redirectTo: 'projects',
+        pathMatch: 'full'
+      },
+      {
+        path: 'clinician-profession',
+        redirectTo: 'timesheet',
+        pathMatch: 'full'
+      },
+      {
+        path: 'clinician-category',
+        redirectTo: 'designation',
+        pathMatch: 'full'
       },
 
       {
@@ -144,8 +160,13 @@ const routes: Routes = [
         canActivate: [AuthGuardService],
       },
       {
+        path: 'timesheet-summary',
+        component: TimesheetSummaryComponent,
+        canActivate: [AuthGuardService],
+      },
+      {
         path: '**',
-        redirectTo: 'analytics-dashboard',
+        redirectTo: 'employee-master',
         pathMatch: 'full',
       },
     ],

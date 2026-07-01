@@ -4,24 +4,64 @@
     [showColonAfterLabel]="true"
     [showRequiredMark]="false"
     [disabled]="loading"
+    [colCount]="2"
   >
-    <dxi-item
-      dataField="email"
-      editorType="dxTextBox"
-      [editorOptions]="{
-        placeholder: 'Email',
-        stylingMode: 'filled',
-        mode: 'email',
-      }"
-    >
-      <dxi-validation-rule
-        type="required"
-        message="Email is required"
-      ></dxi-validation-rule>
-      <dxi-validation-rule
-        type="email"
-        message="Email is invalid"
-      ></dxi-validation-rule>
+    <dxi-item dataField="EmployeeName" editorType="dxTextBox" [editorOptions]="{ placeholder: 'Employee Name', stylingMode: 'filled' }">
+      <dxi-validation-rule type="required" message="Employee Name is required"></dxi-validation-rule>
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+
+
+    <dxi-item dataField="email" editorType="dxTextBox" [editorOptions]="{ placeholder: 'Email', stylingMode: 'filled', mode: 'email' }">
+      <dxi-validation-rule type="required" message="Email is required"></dxi-validation-rule>
+      <dxi-validation-rule type="email" message="Email is invalid"></dxi-validation-rule>
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="MobileNo" editorType="dxTextBox" [editorOptions]="{ placeholder: 'Mobile No', stylingMode: 'filled' }">
+      <dxi-validation-rule type="required" message="Mobile No is required"></dxi-validation-rule>
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="WhatsappNo" editorType="dxTextBox" [editorOptions]="{ placeholder: 'Whatsapp No', stylingMode: 'filled' }">
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="AlternateContactNo" editorType="dxTextBox" [editorOptions]="{ placeholder: 'Alternate Contact No', stylingMode: 'filled' }">
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="Address1" editorType="dxTextBox" [editorOptions]="{ placeholder: 'Address 1', stylingMode: 'filled' }">
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+    <dxi-item dataField="Address2" editorType="dxTextBox" [editorOptions]="{ placeholder: 'Address 2', stylingMode: 'filled' }">
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+    <dxi-item dataField="Address3" editorType="dxTextBox" [editorOptions]="{ placeholder: 'Address 3', stylingMode: 'filled' }">
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="DesignationID" editorType="dxSelectBox" [editorOptions]="{ placeholder: 'Designation (e.g. Software Engineer)', items: designationOptions, valueExpr: 'ID', displayExpr: 'Designation', stylingMode: 'filled' }">
+      <dxi-validation-rule type="required" message="Designation is required"></dxi-validation-rule>
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="Sex" editorType="dxSelectBox" [editorOptions]="{ placeholder: 'Sex', items: [{id:1, text:'Male'}, {id:2, text:'Female'}, {id:3, text:'Other'}], valueExpr: 'id', displayExpr: 'text', stylingMode: 'filled' }">
+      <dxi-validation-rule type="required" message="Sex is required"></dxi-validation-rule>
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="DateOfJoin" editorType="dxDateBox" [editorOptions]="{ placeholder: 'Date of Join', stylingMode: 'filled' }">
+      <dxi-validation-rule type="required" message="Date of Join is required"></dxi-validation-rule>
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="IsWorking" editorType="dxSelectBox" [editorOptions]="{ placeholder: 'Status', items: [{id: true, text: 'Working'}, {id: false, text: 'Not Working'}], valueExpr: 'id', displayExpr: 'text', stylingMode: 'filled' }">
+      <dxo-label [visible]="false"></dxo-label>
+    </dxi-item>
+
+    <dxi-item dataField="Remarks" editorType="dxTextArea" [editorOptions]="{ placeholder: 'Remarks', stylingMode: 'filled' }">
       <dxo-label [visible]="false"></dxo-label>
     </dxi-item>
 
@@ -63,7 +103,7 @@
       <dxo-label [visible]="false"></dxo-label>
     </dxi-item>
 
-    <dxi-item>
+    <dxi-item [colSpan]="2">
       <div class="policy-info">
         By creating an account, you agree to the
         <a [routerLink]="redirectLink">Terms of Service</a> and
@@ -71,7 +111,7 @@
       </div>
     </dxi-item>
 
-    <dxi-item itemType="button">
+    <dxi-item itemType="button" [colSpan]="2">
       <dxo-button-options
         width="100%"
         type="default"
@@ -98,5 +138,4 @@
   <div class="login-link">
     Have an account? <a [routerLink]="redirectLink">Sign In</a>
   </div>
-  <app-login-oauth></app-login-oauth>
 </form>

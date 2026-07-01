@@ -84,7 +84,27 @@
 
       .dx-button-mode-text .dx-icon {
         color: #ebebeb;
+      }
     }
+  }
+
+  &.wide-card {
+    margin-right: auto !important;
+    margin-left: auto !important;
+
+    .dx-card {
+      margin-right: auto !important;
+      max-width: 800px !important;
+      width: 95vw;
+      height: auto !important;
+      max-height: 98vh !important;
+      overflow-y: auto !important;
+      padding: 15px 40px !important;
+
+      .header {
+        margin-top: 5px !important;
+        margin-bottom: 15px !important;
+      }
     }
   }
 }

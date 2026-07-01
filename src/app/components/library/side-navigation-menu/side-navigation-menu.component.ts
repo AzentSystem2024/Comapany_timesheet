@@ -27,8 +27,7 @@ import { AnyARecord } from 'dns';
   styleUrls: ['./side-navigation-menu.component.scss'],
 })
 export class SideNavigationMenuComponent
-  implements AfterViewInit, OnDestroy, OnInit
-{
+  implements AfterViewInit, OnDestroy, OnInit {
   @ViewChild(DxTreeViewComponent, { static: true })
   menu!: DxTreeViewComponent;
 
@@ -80,12 +79,46 @@ export class SideNavigationMenuComponent
     private elementRef: ElementRef,
     private AuthService: AuthService,
     private dataservice: DataService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const rawMenu = localStorage.getItem('sidemenuItems');
-    this.navigation = rawMenu ? JSON.parse(rawMenu) : [];
-    const defaultPath = 'analytics-dashboard';
+    let navItems = rawMenu ? JSON.parse(rawMenu) : [];
+
+    navItems.forEach((m: any) => {
+      if (m.path === 'speciality') m.path = 'projects';
+      if (m.path === 'clinician-profession') m.path = 'timesheet';
+      if (m.path === 'clinician-category') m.path = 'designation';
+
+      if (m.text === 'Reports' || m.text === 'Sidebar Reports' || (m.MenuName && m.MenuName.includes('Report'))) {
+        m.path = undefined; // Parent becomes a dropdown container
+        m.icon = 'doc';
+      }
+    });
+
+    const reportMenu = navItems.find((m: any) => m.text === 'Reports' || m.text === 'Sidebar Reports' || (m.MenuName && m.MenuName.includes('Report')));
+    if (reportMenu) {
+      navItems.push({
+        id: 'timesheet-summary-menu',
+        text: 'Timesheet-Summary',
+        path: 'timesheet-summary',
+        GroupID: reportMenu.id
+      });
+    }
+
+    const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+    const email = logData.emailID || logData.EmailID || logData.emailId || '';
+    const empName = logData.employeeName || logData.EmployeeName || '';
+    const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+
+    if (!isAdmin) {
+      navItems = navItems.filter((m: any) =>
+        !(m.text === 'Reports' || m.text === 'Sidebar Reports' || (m.MenuName && m.MenuName.includes('Report')) || m.path === 'timesheet-summary')
+      );
+    }
+
+    this.navigation = navItems;
+    const defaultPath = isAdmin ? 'employee-master' : 'timesheet';
     this.selectedItem = defaultPath;
     this.setSelectedItem();
     this.customerInfo = this.dataservice.fetch_customer_name();
@@ -125,13 +158,11 @@ export class SideNavigationMenuComponent
 
     const treeView: any = this.menu.instance;
 
-    // 2. Map items for lookup
     const itemMap = new Map<string, any>();
     this.items.forEach((i) => itemMap.set(String(i.id), i));
 
     const clickedGroupID = String(clickedItem.GroupID || '0');
 
-    // 3. Collapse sibling items with same GroupID
     this.items.forEach((i) => {
       const siblingKey = String(i.id);
       if (
@@ -142,7 +173,6 @@ export class SideNavigationMenuComponent
       }
     });
 
-    // 4. Toggle clicked item
     if (treeView.isItemExpanded(clickedItemKey)) {
       treeView.collapseItem(clickedItemKey);
     } else {
@@ -166,7 +196,6 @@ export class SideNavigationMenuComponent
     }
   }
 
-  // Expands parent nodes of the selected item so it's visible
   expandParentNodes(selectedId: string): void {
     const flatItems = this.navigation;
     const itemMap: { [key: string]: any } = {};
@@ -185,7 +214,6 @@ export class SideNavigationMenuComponent
     }
   }
 
-  // Transforms flat array into hierarchical structure for tree-view
   private transformMenuData(menuItems: any[]): any[] {
     const lookup: { [key: string]: any } = {};
     const rootMenus: any[] = [];
@@ -212,4 +240,4 @@ export class SideNavigationMenuComponent
   exports: [SideNavigationMenuComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class SideNavigationMenuModule {}
+export class SideNavigationMenuModule { }

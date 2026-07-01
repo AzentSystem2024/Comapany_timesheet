@@ -1,0 +1,72 @@
+@use "../../../../variables.scss" as *;
+@use "sass:math";
+
+.grid-header {
+    @include header();
+}
+
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 15px;
+    padding: 0;
+    border-radius: 8px;
+}
+
+.filter-group {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+
+    label {
+        font-size: 12px;
+        color: var(--text-color);
+        margin-bottom: 4px;
+        margin-left: 2px;
+    }
+
+    ::ng-deep .dx-texteditor-input {
+        color: var(--text-color) !important;
+    }
+}
+
+.action-item {
+    margin-left: 15px;
+}
+
+.apply-btn {
+    min-width: 100px;
+}
+
+::ng-deep .dx-datagrid-summary-item {
+    font-weight: bold;
+}
+
+::ng-deep .dx-button-success {
+    background-color: #0087bd !important;
+    color: white !important;
+}
+
+.SearchParams-container {
+    transition: transform 0.5s ease, opacity 0.8s ease, max-height 0.5s ease;
+    transform: translateY(0);
+    opacity: 1;
+    max-height: 500px;
+    margin-top: 10px;
+}
+
+.hide-content {
+    transform: translateY(-20px);
+    opacity: 0;
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}

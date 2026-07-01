@@ -151,7 +151,7 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   closeChangePassword() {
-    this.route.navigateByUrl('/analytics-dashboard');
+    this.route.navigateByUrl('/employee-master');
   }
 
   validateField(fieldName: string): boolean {

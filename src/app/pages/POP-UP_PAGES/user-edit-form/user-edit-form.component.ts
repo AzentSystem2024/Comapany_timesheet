@@ -124,7 +124,7 @@ export class UserEditFormComponent implements OnInit, OnChanges {
   securityPolicyData: any;
   facilityList;
   countryCodes: any[] = [];
-  isImageUploaded = false; // Variable to track image upload status
+  isImageUploaded = false; 
 
   isDropZoneActive = false;
   imageSource = '';
@@ -132,7 +132,7 @@ export class UserEditFormComponent implements OnInit, OnChanges {
   progressVisible = false;
   progressValue = 0;
   allowedFileExtensions: string[] = ['.jpg', '.jpeg', '.gif', '.png'];
-  selectedIndex: number = 0; // Default to the first tab (User)
+  selectedIndex: number = 0;
   generatedPassword: string = '';
   tooltipVisible = false;
   onShowEvent = 'click';
@@ -146,9 +146,9 @@ export class UserEditFormComponent implements OnInit, OnChanges {
   clinicianOptions = ['clinician1', 'clinician2', 'clinician3'];
   isLocked: boolean = false;
   isInactive: boolean = false;
-  showUserDetails: boolean = true; // Show User Details by default
-  showOptions: boolean = true; // Show Options by default
-  selectedUserType: string = this.userTypes[0]; // Default to 'Normal User'
+  showUserDetails: boolean = true; 
+  showOptions: boolean = true; 
+  selectedUserType: string = this.userTypes[0]; 
   userList: any;
   tabItems = [{ text: 'Facility' }, { text: 'Options' }];
   facilityData = [
@@ -198,94 +198,71 @@ export class UserEditFormComponent implements OnInit, OnChanges {
 
   onLoginNameInput(event: Event): void {
     const target = event.target as HTMLInputElement;
-
-    // Remove spaces from the current value and sanitize it
     const sanitizedValue = target.value
       .replace(/\s/g, '')
       .replace(/[^a-zA-Z0-9]/g, '');
 
-    // Check if the first character is an alphabet
     if (sanitizedValue.length > 0 && /^[a-zA-Z]/.test(sanitizedValue[0])) {
-      // Update the target value and the LoginName property
       target.value = sanitizedValue;
-      this.newUserData.LoginName = sanitizedValue; // Update the login name value
+      this.newUserData.LoginName = sanitizedValue; 
 
-      // Validate the login name directly
       this.checkLoginNameExists({ value: sanitizedValue });
     } else {
-      // If the first character is not an alphabet, reset the input
-      target.value = ''; // Optionally clear the input
-      this.newUserData.LoginName = ''; // Reset the login name value
+      target.value = ''; 
+      this.newUserData.LoginName = ''; 
     }
   }
 
   checkLoginNameExists = (e: any): boolean => {
     const loginName = e.value;
 
-    // Check if the login name exists in the user list, excluding the current one
     const exists = this.userList.some(
       (user) =>
         user.LoginName === loginName && user.LoginName !== this.currentLoginName
     );
 
-    // Return true if it does NOT exist, false if it DOES exist
     e.valid = !exists;
 
-    // Optional: You can also provide feedback to the user here if needed
     if (!e.valid) {
-      // Logic to show a message indicating the login name already exists
       console.log('Login name already exists.');
     }
 
     return e.valid;
   };
 
-  // This function removes spaces from the email input and updates the Email property
   onEmailInput(event: Event): void {
     const target = event.target as HTMLInputElement;
 
-    // Remove spaces from the email input
     const sanitizedValue = target.value.replace(/\s/g, '');
 
-    // Update the target value and the Email property
     target.value = sanitizedValue;
     this.newUserData.Email = sanitizedValue;
     this.checkEmailExists({ value: sanitizedValue });
   }
 
-  // This function checks if the email already exists in the user list
   checkEmailExists = (e: any): boolean => {
     const email = e.value;
 
-    // Check if the email already exists in the user list
     const exists = this.userList.some(
       (user) =>
         user.Email.toLowerCase() === email.toLowerCase() &&
         user.Email !== this.currentEmail
     );
 
-    // Return true if it does NOT exist, false if it DOES exist
     e.valid = !exists;
     return e.valid;
   };
 
-  // Function to handle selection changes
   onSelectionChanged(e: any) {
-    // Map selected row keys to the desired format
     this.newUserData.user_facility = e.selectedRowKeys.map((key: number) => ({
-      // Generate an ID for each entry starting from 1
-      FacilityID: key, // Assign the selected FacilityID
+      FacilityID: key, 
     }));
     console.log('User Facility:', this.userData.user_facility);
     this.selectedRowCount = e.selectedRowKeys.length;
-
-    // Reorder facilityList based on selectedRows
     this.facilityList = [
-      // Selected facilities first
       ...this.facilityList.filter((facility) =>
         this.selectedRows.includes(facility.ID)
       ),
-      // Non-selected facilities after
       ...this.facilityList.filter(
         (facility) => !this.selectedRows.includes(facility.ID)
       ),
@@ -306,7 +283,7 @@ export class UserEditFormComponent implements OnInit, OnChanges {
     this.showOptions = !this.showOptions;
   }
   togglePasswordVisibility(): void {
-    this.isPasswordVisible = !this.isPasswordVisible; // Toggle the visibility flag
+    this.isPasswordVisible = !this.isPasswordVisible;
   }
 
   preventDefaults(e: Event) {
@@ -337,14 +314,13 @@ export class UserEditFormComponent implements OnInit, OnChanges {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       this.readFile(file);
-      this.resetFileInput(); // Reset the file input after selecting a file
+      this.resetFileInput(); 
     }
   }
 
-  // Function to reset the file input
   resetFileInput() {
     if (this.fileInput && this.fileInput.nativeElement) {
-      this.fileInput.nativeElement.value = ''; // Reset the file input value
+      this.fileInput.nativeElement.value = ''; 
     }
   }
 
@@ -354,7 +330,7 @@ export class UserEditFormComponent implements OnInit, OnChanges {
       const result = reader.result as string;
       this.isImageUploaded = true;
       this.newUserData.PhotoFile = result;
-      this.images = [result]; // Only store one image
+      this.images = [result]; 
     };
     reader.readAsDataURL(file);
   }
@@ -372,57 +348,41 @@ export class UserEditFormComponent implements OnInit, OnChanges {
 
   removeImage() {
     this.isImageUploaded = false;
-    this.images = []; // Clear the image
-    this.newUserData.PhotoFile = ''; // Clear the stored file data
+    this.images = []; 
+    this.newUserData.PhotoFile = ''; 
   }
 
   getCountryCodeList() {
-    const codes = CountryList.getAll(); // Get all country codes
+    const codes = CountryList.getAll(); 
     this.countryCodes = codes.map((country: any) => ({
       data: country.data,
     }));
-    console.log(this.countryCodes, 'country code'); // Optional: For debugging
+    console.log(this.countryCodes, 'country code'); 
   }
 
-  // Use this function to display based on dropdown state
   countryCodeDisplay = (item: any) => {
     return item
       ? this.isDropdownOpen
         ? `${item.data.flag} ${item.data.dial_code} - ${item.data.name}`
         : `${item.data.flag}`
-      : ''; // Display only country flag before dropdown is opened
+      : ''; 
   };
 
-  // Triggered when the dropdown is opened
   onDropdownOpened() {
-    this.isDropdownOpen = true; // Mark dropdown as open
+    this.isDropdownOpen = true; 
   }
-
-  // Triggered when the dropdown is closed
   onDropdownClosed() {
-    this.isDropdownOpen = false; // Mark dropdown as closed
+    this.isDropdownOpen = false; 
   }
 
   extractCountryCode(mobileNumber: string): string | null {
-    // Extract the dial code from the mobile number
     const dialCode = this.countryCodes.find((code) =>
       mobileNumber.startsWith(code.data.dial_code)
     );
     return dialCode ? dialCode.data.dial_code : null;
   }
 
-  // getOnlyMobileNumber(fullPhoneNumber: string): string {
-  //   // Extract mobile number by removing the dial code part
-  //   const selectedCountry = this.countryCodes.find((code) =>
-  //     fullPhoneNumber.startsWith(code.data.dial_code)
-  //   );
-
-  //   if (selectedCountry) {
-  //     return fullPhoneNumber.replace(selectedCountry.data.dial_code, '').trim();
-  //   }
-
-  //   return fullPhoneNumber; // Return as is if no match found
-  // }
+  
 
   onDecimalPointsChanged(event: any): void {
     this.newUserData.Decimal_Points = event.value; // Ensure the value is updated in newUserData
@@ -969,7 +929,7 @@ export class UserEditFormComponent implements OnInit, OnChanges {
 
   get isAdminReadonly(): boolean {
   return (
-    this.newUserData?.UserName?.toLowerCase() === 'admin' &&
+    this.newUserData?.UserName?.toLowerCase() === 'bimal' &&
     this.newUserData?.UserRoleID ==1
   );
 }

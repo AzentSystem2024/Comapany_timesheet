@@ -19,7 +19,7 @@ export class MasterReportService {
   constructor(
     private http: HttpClient,
     private config: ConfigService,
-  ) {}
+  ) { }
 
   private get BASE_URL(): string {
     return this.config.apiBaseUrl;
@@ -55,6 +55,14 @@ export class MasterReportService {
 
     return this.http.post(Url, reqBody);
   }
+  get_Activity_List() {
+    const Url = `${this.BASE_URL}Activity/list`;
+    const reqBody = {
+      list: [],
+    };
+    return this.http.post(Url, reqBody);
+  }
+
   //=============insert user level data=========
   insert_userLevel_Data(ObjData: any) {
     const Url = `${this.BASE_URL}userrole/insert`;
@@ -1431,5 +1439,115 @@ export class MasterReportService {
   get_ADOC_CountingRule_List() {
     const Url = `${this.BASE_URL}ADOCGroup/adoc-rule-list`;
     return this.http.post(Url, {});
+  }
+
+  //==========================================PROJECT MASTER==========================================================
+  get_Project_List() {
+    const Url = `${this.BASE_URL}Project/list`;
+    return this.http.get<any>(Url);
+  }
+
+  insert_Project_Data(projectData: any) {
+    const Url = `${this.BASE_URL}Project/insert`;
+    return this.http.post<any>(Url, projectData);
+  }
+
+  update_Project_data(projectData: any) {
+    const Url = `${this.BASE_URL}Project/update`;
+    return this.http.post<any>(Url, projectData);
+  }
+
+  Remove_Project_Row_Data(id: any) {
+    const Url = `${this.BASE_URL}Project/delete/${id}`;
+    return this.http.delete<any>(Url);
+  }
+
+  //==========================================EMPLOYEE MASTER==========================================================
+  get_Employee_List() {
+    const Url = `${this.BASE_URL}Employee/list`;
+    return this.http.get<any>(Url);
+  }
+
+  get_Employee_By_Id(id: any) {
+    const Url = `${this.BASE_URL}Employee/select/${id}`;
+    return this.http.get<any>(Url);
+  }
+
+  insert_Employee_Data(employeeData: any) {
+    const Url = `${this.BASE_URL}Employee/insert`;
+    return this.http.post<any>(Url, employeeData);
+  }
+
+  update_Employee_Data(employeeData: any) {
+    const Url = `${this.BASE_URL}Employee/update`;
+    return this.http.put<any>(Url, employeeData);
+  }
+
+  Remove_Employee_Row_Data(id: any) {
+    const Url = `${this.BASE_URL}Employee/delete/${id}`;
+    return this.http.delete<any>(Url);
+  }
+
+  //==========================================DESIGNATION MASTER==========================================================
+  get_Designation_List() {
+    const Url = `${this.BASE_URL}Designation/list`;
+    return this.http.get<any>(Url);
+  }
+
+  get_Designation_By_Id(id: any) {
+    const Url = `${this.BASE_URL}Designation/select/${id}`;
+    return this.http.get<any>(Url);
+  }
+
+  insert_Designation_Data(designationData: any) {
+    const Url = `${this.BASE_URL}Designation/insert`;
+    return this.http.post<any>(Url, designationData);
+  }
+
+  update_Designation_Data(designationData: any) {
+    const Url = `${this.BASE_URL}Designation/update`;
+    return this.http.put<any>(Url, designationData);
+  }
+
+  Remove_Designation_Row_Data(id: any) {
+    const Url = `${this.BASE_URL}Designation/delete/${id}`;
+    return this.http.delete<any>(Url);
+  }
+
+  //==========================================TIMESHEET==========================================================
+  get_Timesheet_List() {
+    const Url = `${this.BASE_URL}timesheetheader/list`;
+    const reqBody = { list: [] };
+    return this.http.post(Url, reqBody);
+  }
+
+  insert_Timesheet_Data(ObjData: any) {
+    const Url = `${this.BASE_URL}timesheetheader/insert`;
+    return this.http.post(Url, ObjData);
+  }
+
+  update_Timesheet_Data(ObjData: any) {
+    const Url = `${this.BASE_URL}timesheetheader/update`;
+    return this.http.post(Url, ObjData);
+  }
+
+  delete_Timesheet_Data(id: any) {
+    const Url = `${this.BASE_URL}timesheetheader/delete/${id}`;
+    return this.http.post(Url, {});
+  }
+
+  insert_TimesheetEntry_Data(ObjData: any) {
+    const Url = `${this.BASE_URL}timesheetentry/insert`;
+    return this.http.post(Url, ObjData);
+  }
+
+  get_TimesheetEntry_By_TimesheetId(id: any) {
+    const Url = `${this.BASE_URL}TimesheetEntry/getByTimesheetId/${id}`;
+    return this.http.get<any>(Url);
+  }
+
+  delete_TimesheetEntry_By_TimesheetId(id: any) {
+    const Url = `${this.BASE_URL}TimesheetEntry/deleteByTimesheetId/${id}`;
+    return this.http.delete<any>(Url);
   }
 }

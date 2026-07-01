@@ -6,8 +6,10 @@ import { LoginOauthModule } from 'src/app/components/library/login-oauth/login-o
 import { ValidationCallbackData } from 'devextreme-angular/common';
 import { DxFormModule } from 'devextreme-angular/ui/form';
 import { DxLoadIndicatorModule } from 'devextreme-angular/ui/load-indicator';
+import { DxSelectBoxModule } from 'devextreme-angular/ui/select-box';
 import notify from 'devextreme/ui/notify';
 import { AuthService, IResponse } from 'src/app/services';
+import { MasterReportService } from '../../../pages/MASTER PAGES/master-report.service';
 
 @Component({
   selector: 'app-create-account-form',
@@ -22,15 +24,18 @@ export class CreateAccountFormComponent implements OnInit {
   defaultAuthData: IResponse;
 
   formData: any = {};
+  designationOptions: any[] = [];
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private masterReportService: MasterReportService
+  ) { }
 
   async onSubmit(e: Event) {
     e.preventDefault();
-    const { email, password } = this.formData;
     this.loading = true;
-
-    const result = await this.authService.createAccount(email, password);
+    const result = await this.authService.createAccount(this.formData);
     this.loading = false;
 
     if (result.isOk) {
@@ -44,6 +49,14 @@ export class CreateAccountFormComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.defaultAuthData = await this.authService.getUser();
+    this.masterReportService.get_Designation_List().subscribe({
+      next: (res: any) => {
+        if (res.flag === "1" && res.data) {
+          this.designationOptions = res.data;
+        }
+      },
+      error: (err: any) => console.error("Failed to load designations", err)
+    });
   }
 }
 @NgModule({
@@ -53,6 +66,7 @@ export class CreateAccountFormComponent implements OnInit {
     LoginOauthModule,
     DxFormModule,
     DxLoadIndicatorModule,
+    DxSelectBoxModule,
   ],
   declarations: [CreateAccountFormComponent],
   exports: [CreateAccountFormComponent],

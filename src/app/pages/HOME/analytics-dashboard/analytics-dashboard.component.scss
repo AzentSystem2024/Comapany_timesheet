@@ -20,12 +20,15 @@
   overflow: hidden;
   border-style: none !important;
 }
+
 .firstChartDiv {
   margin-bottom: 10px;
 }
+
 .col-md-6 {
   width: 49.5%;
 }
+
 .topDiv {
   background-color: var(--card-bg);
   border: var(--card-bg);
@@ -111,10 +114,10 @@
   cursor: default;
   padding-bottom: 5px;
 }
-::ng-deep .topDiv .d-flex .dx-button.dx-button-default {
-    border-radius: 8px !important;
-    background-color: teal !important;
-    padding: 4px 10px !important;
-    color: #fff !important;
-}
 
+::ng-deep .topDiv .d-flex .dx-button.dx-button-default {
+  border-radius: 8px !important;
+  background-color: #5fa8d3 !important;
+  padding: 4px 10px !important;
+  color: #fff !important;
+}

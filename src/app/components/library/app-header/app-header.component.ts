@@ -58,14 +58,8 @@ export class AppHeaderComponent implements OnInit {
             sessionStorage.clear();
             // Clear stored routes again to ensure no leftovers
             this.reuseStrategy.clearStoredData();
-            // Navigate to the login page
-            this.router.navigate(['/auth/login']).then(() => {
-              // window.location.reload();
-              // this.router.navigate(['/auth/login']);
-              setTimeout(() => {
-                window.location.reload();
-              }, 250);
-            });
+            // Navigate to the login page directly for a smooth refresh
+            window.location.href = '/auth/login';
           }
         });
       },
@@ -89,10 +83,11 @@ export class AppHeaderComponent implements OnInit {
         // Get UserPhoto from sessionStorage
         const storedUserPhoto = sessionStorage.getItem('UserPhoto');
 
-        // Set avatarUrl: use storedUserPhoto if available, otherwise default to the fallback image
-        this.user.avatarUrl = storedUserPhoto
+        // Set avatarUrl: use storedUserPhoto if available, otherwise default to initials icon
+        const hasPhoto = storedUserPhoto && storedUserPhoto !== 'null' && storedUserPhoto !== 'undefined' && storedUserPhoto !== '';
+        this.user.avatarUrl = hasPhoto
           ? storedUserPhoto
-          : 'https://js.devexpress.com/Demos/WidgetsGallery/JSDemos/images/employees/01.png';
+          : `https://ui-avatars.com/api/?name=${this.user.name || 'User'}&background=F44336&color=fff&rounded=true`;
       }
     });
 

@@ -61,8 +61,10 @@ export class EmployeeMasterComponent {
   datasource = new DataSource<any>({
     load: () =>
       new Promise((resolve, reject) => {
-        const storedData = JSON.parse(localStorage.getItem('EmployeeMasterData') || '[]');
-        resolve(storedData);
+        this.service.get_Employee_List().subscribe({
+          next: (res: any) => resolve(res.data || res),
+          error: (err: any) => reject(err),
+        });
       }),
   });
   addButtonOptions: any;
@@ -91,7 +93,7 @@ export class EmployeeMasterComponent {
       type: 'default',
       stylingMode: 'contained',
       hint: 'Add new entry',
-      disabled: !this.menuPrevilage.CanAdd,
+      disabled: false,
       onClick: () => this.show_new_Form(),
       elementAttr: { class: 'add-button' },
     };
@@ -105,17 +107,17 @@ export class EmployeeMasterComponent {
     return rowData?.EmployeeID ?? rowData?.ID ?? rowData?.UserID;
   }
 
-  onEditingRow(event): void {
+  onEditingRow(event: any): void {
     event.cancel = true;
     const Id = this.getEmployeeRowId(event.data);
     this.isEditPopupOpened = true;
-    const storedData = JSON.parse(localStorage.getItem('EmployeeMasterData') || '[]');
-    this.selectedRowData = storedData.find((item: any) => this.getEmployeeRowId(item) === Id) || event.data;
-    this.cdr.detectChanges(); // Ensure Angular picks up the change
+    const rowIndex = event.component.getRowIndexByKey(event.key);
+    this.selectedRowData = { ...event.data, SNo: rowIndex + 1 };
+    this.cdr.detectChanges(); 
   }
 
   canShowDelete = (e: any): boolean => {
-    return this.menuPrevilage.CanDelete;
+    return true;
   };
   
   show_new_Form() {
@@ -126,20 +128,29 @@ export class EmployeeMasterComponent {
     const data = this.newEmployeeForm.getNewEmployeeData();
     console.log(data, 'PAYLOAD IN SAVE');
     
-    let storedData = JSON.parse(localStorage.getItem('EmployeeMasterData') || '[]');
-    data.EmployeeID = new Date().getTime(); // give an ID
-    storedData.push(data);
-    localStorage.setItem('EmployeeMasterData', JSON.stringify(storedData));
-
-    notify(
-      {
-        message: 'data saved successfully',
-        position: { at: 'top right', my: 'top right' },
-        displayTime: 500,
+    this.service.insert_Employee_Data(data).subscribe({
+      next: (res: any) => {
+        if(res.flag == "1") {
+          notify(
+            { message: 'data saved successfully', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'success'
+          );
+          this.isAddFormPopupOpened = false;
+          this.dataGrid.instance.refresh();
+        } else {
+          notify(
+            { message: res.message || 'Failed to save data', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'error'
+          );
+        }
       },
-      'success'
-    );
-    this.dataGrid.instance.refresh();
+      error: (err: any) => {
+        notify(
+          { message: 'Server error', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+          'error'
+        );
+      }
+    });
   }
 
   onClearData() {
@@ -151,25 +162,32 @@ export class EmployeeMasterComponent {
     let SelectedRow = event.key;
     const Id = this.getEmployeeRowId(SelectedRow);
     
-    let storedData = JSON.parse(localStorage.getItem('EmployeeMasterData') || '[]');
-    storedData = storedData.filter((item: any) => this.getEmployeeRowId(item) !== Id);
-    localStorage.setItem('EmployeeMasterData', JSON.stringify(storedData));
-
-    notify(
-      {
-        message: 'Delete operation successful',
-        position: { at: 'top right', my: 'top right' },
-        displayTime: 500,
+    this.service.Remove_Employee_Row_Data(Id).subscribe({
+      next: (res: any) => {
+        if(res.flag == "1") {
+          notify(
+            { message: 'Delete operation successful', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'success'
+          );
+          this.dataGrid.instance.refresh();
+        } else {
+          notify(
+            { message: res.message || 'Failed to delete', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'error'
+          );
+        }
       },
-      'success'
-    );
-    this.dataGrid.instance.refresh();
+      error: (err: any) => {
+        notify(
+          { message: 'Server error', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+          'error'
+        );
+      }
+    });
   }
-  //=================== Page refreshing==========================
   refresh = () => {
     this.dataGrid.instance.refresh();
   };
-  //========================Export data ==========================
   onExporting(event: any) {
     const fileName = 'employee-master';
     this.reportService.exportDataGrid(event, fileName);
@@ -177,7 +195,6 @@ export class EmployeeMasterComponent {
 
   CloseEditForm() {
     this.isEditPopupOpened = false;
-    // this.getUSerData();
     this.dataGrid.instance.refresh();
   }
 }

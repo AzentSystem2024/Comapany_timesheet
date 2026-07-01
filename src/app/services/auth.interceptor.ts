@@ -32,7 +32,7 @@ export class AuthInterceptor implements HttpInterceptor {
     let clonedReq = req;
 
     // Temporarily avoid passing token (keep code for future use)
-    if (token) {
+    if (token && !req.headers.has('Authorization')) {
       clonedReq = req.clone({
         setHeaders: { Authorization: `Bearer ${token}` },
       });

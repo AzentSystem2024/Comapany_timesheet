@@ -1,16 +1,8 @@
 <!-- <h6>Login To Your Account</h6> -->
-<form class="login-form" (submit)="onSubmit($event)">
-  <dx-form
-    [formData]="formData"
-    [disabled]="loading"
-    title="Login To Your Account"
-    [showColonAfterLabel]="true"
-    [showRequiredMark]="false"
-  >
-    <dxi-item
-      dataField="username"
-      editorType="dxTextBox"
-      [editorOptions]="{
+<form class="login-form" (submit)="onSubmit($event)" *ngIf="!is2FAState">
+  <dx-form [formData]="formData" [disabled]="loading" title="Login To Your Account" [showColonAfterLabel]="true"
+    [showRequiredMark]="false">
+    <dxi-item dataField="username" editorType="dxTextBox" [editorOptions]="{
         placeholder: 'User Name',
         stylingMode: 'filled',
         buttons:[ {
@@ -22,19 +14,12 @@
           disabled: true
         }
       }],
-      }"
-    >
-      <dxi-validation-rule
-        type="required"
-        message="Username is required"
-      ></dxi-validation-rule>
+      }">
+      <dxi-validation-rule type="required" message="Username is required"></dxi-validation-rule>
       <dxo-label [visible]="false"></dxo-label>
     </dxi-item>
 
-    <dxi-item
-      dataField="password"
-      editorType="dxTextBox"
-      [editorOptions]="{
+    <dxi-item dataField="password" editorType="dxTextBox" [editorOptions]="{
         placeholder: 'Password',
         stylingMode: 'filled',
         mode: isPasswordVisible ? 'text' : 'password',
@@ -59,31 +44,21 @@
             }
           }
         ]
-      }"
-    >
-      <dxi-validation-rule
-        type="required"
-        message="Password is required"
-      ></dxi-validation-rule>
+      }">
+      <dxi-validation-rule type="required" message="Password is required"></dxi-validation-rule>
       <dxo-label [visible]="false"></dxo-label>
     </dxi-item>
-      <dxi-item>
+    <dxi-item>
       <div class="reset-link">
-  <a href="" (click)="onForgotPasswordClick($event)" style="text-decoration: none; font-size: 18px;">
-    Forgot password?
-  </a>
-</div>
-  </dxi-item>
+        <a href="" (click)="onForgotPasswordClick($event)" style="text-decoration: none; font-size: 18px;">
+          Forgot password?
+        </a>
+      </div>
+    </dxi-item>
 
     <dxi-item itemType="button" class="mt-3">
-      <dxo-button-options
-        width="100%"
-        [height]="'44px'"
-        type="default"
-        cssClass="btn-sign-in"
-        [useSubmitBehavior]="true"
-        [template]="'signInTemplate'"
-      >
+      <dxo-button-options width="100%" [height]="'44px'" type="default" cssClass="btn-sign-in"
+        [useSubmitBehavior]="true" [template]="'signInTemplate'">
       </dxo-button-options>
     </dxi-item>
 
@@ -91,11 +66,7 @@
     <ng-container *dxTemplate="let item of 'signInTemplate'">
       <span class="dx-button-text">
         <ng-container *ngIf="loading; else notLoading">
-          <dx-load-indicator
-            width="24px"
-            height="24px"
-            [visible]="true"
-          ></dx-load-indicator>
+          <dx-load-indicator width="24px" height="24px" [visible]="true"></dx-load-indicator>
         </ng-container>
         <ng-template #notLoading>Sign In</ng-template>
       </span>
@@ -103,4 +74,70 @@
   </dx-form>
 
 
+</form>
+<div class="mt-3 text-center">
+  <span style="font-size: 16px;">Don't have an account? </span>
+  <a href="javascript:void(0)" (click)="onCreateAccountClick()"
+    style="text-decoration: none; font-size: 16px; font-weight: bold;">
+    Register Here
+  </a>
+</div>
+
+<!-- 2FA SECTION -->
+<form class="login-form" (submit)="onVerifyOTP($event)" *ngIf="is2FAState"
+  style="max-width: 100%; height: auto !important;">
+  <div *ngIf="isSetup2FA && !showOTPInputForSetup" class="text-center mb-3">
+    <h5>Set up Two-Factor Authentication</h5>
+    <p style="margin-bottom: 8px;">Scan this QR code with the Google Authenticator app on your phone:</p>
+    <img *ngIf="qrCodeUrl" [src]="qrCodeUrl" alt="QR Code"
+      style="width: 140px; height: 140px; display: block; margin: 0 auto;" />
+    <p class="mt-2" style="font-size: 13px; margin-bottom: 4px;">Or configure your Google Authenticator app by manually
+      entering this setup key:</p>
+    <div class="p-2 mb-2"
+      style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; font-size: 16px; letter-spacing: 2px;">
+      <strong>{{manualEntryKey}}</strong>
+    </div>
+
+    <dx-button width="100%" height="44px" type="default" text="I have scanned this code" class="mt-3"
+      (onClick)="onNextToOTP()"></dx-button>
+  </div>
+
+  <div *ngIf="!isSetup2FA || showOTPInputForSetup">
+    <div class="text-center mb-3">
+      <h5>Two-Factor Authentication</h5>
+      <p>Enter the 6-digit code from your authenticator app.</p>
+    </div>
+
+    <dx-form [disabled]="loading" [showColonAfterLabel]="true" [showRequiredMark]="false">
+      <dxi-item>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+          <input *ngFor="let digit of [0, 1, 2, 3, 4, 5]; let i = index" id="otp-{{i}}" type="text" inputmode="numeric"
+            autocomplete="one-time-code" maxlength="6" [value]="otpDigits[i]" (input)="onOtpInput(i, $event)"
+            (keydown)="onOtpKeyDown(i, $event)" [disabled]="loading"
+            style="width: 48px; height: 50px; text-align: center; font-size: 24px; font-weight: bold; border: 1px solid #ced4da; border-radius: 4px;" />
+        </div>
+      </dxi-item>
+
+      <dxi-item itemType="button" class="mt-3">
+        <dxo-button-options width="100%" [height]="'44px'" type="default" cssClass="btn-sign-in"
+          [useSubmitBehavior]="true" [template]="'verifyTemplate'">
+        </dxo-button-options>
+      </dxi-item>
+
+      <ng-container *dxTemplate="let item of 'verifyTemplate'">
+        <span class="dx-button-text">
+          <ng-container *ngIf="loading; else notLoadingOTP">
+            <dx-load-indicator width="24px" height="24px" [visible]="true"></dx-load-indicator>
+          </ng-container>
+          <ng-template #notLoadingOTP>Verify & Login</ng-template>
+        </span>
+      </ng-container>
+    </dx-form>
+  </div>
+
+  <div class="mt-3 text-center">
+    <a href="javascript:void(0)" (click)="is2FAState = false" style="text-decoration: none; font-size: 14px;">
+      Back to Login
+    </a>
+  </div>
 </form>

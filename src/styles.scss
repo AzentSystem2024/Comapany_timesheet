@@ -1635,3 +1635,15 @@ body {
 .claim-grid {
   --grid-header-bg: var(--claim-grid-header-bg);
 }
+
+/* =========================================================================
+   DARK MODE OVERRIDES
+   These rules apply globally whenever dark mode is toggled via theme.service.ts
+   ========================================================================= */
+
+body.dark-mode {
+  /* Force all input text (like dates, selects, textboxes) to be white in dark mode */
+  .dx-texteditor-input {
+    color: #ffffff !important;
+  }
+}

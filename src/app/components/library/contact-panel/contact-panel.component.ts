@@ -28,7 +28,6 @@ import {
   FormTextboxModule,
   FormPhotoModule,
   CardActivitiesModule,
-  ContactStatusModule,
 } from 'src/app/components';
 import { ScreenService, DataService } from 'src/app/services';
 import { distinctUntilChanged, Subject, Subscription} from 'rxjs';
@@ -149,7 +148,6 @@ export class ContactPanelComponent implements OnInit, OnChanges, AfterViewChecke
     FormTextboxModule,
     FormPhotoModule,
     CardActivitiesModule,
-    ContactStatusModule,
     CommonModule,
   ],
   declarations: [ContactPanelComponent],

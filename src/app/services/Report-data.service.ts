@@ -137,6 +137,18 @@ export class ReportService {
     return this.http.post(url, reqBody);
   }
 
+  //========fetch datasource of Timesheet Summary========
+  fetch_Timesheet_Summary_Data(startDate?: string, endDate?: string) {
+    let url = `${this.BASE_URL}Report/timesheet-summary`;
+    let queryParams = [];
+    if (startDate) queryParams.push(`startDate=${encodeURIComponent(startDate)}`);
+    if (endDate) queryParams.push(`endDate=${encodeURIComponent(endDate)}`);
+    if (queryParams.length > 0) {
+      url += '?' + queryParams.join('&');
+    }
+    return this.http.get(url);
+  }
+
   //==============Export function==================
   exportDataGrid(e: any, fileName: string): void {
     if (e.format === 'pdf') {

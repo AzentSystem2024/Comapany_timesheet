@@ -35,6 +35,7 @@ import { RouteReuseStrategy } from '@angular/router';
 import { CustomReuseStrategy } from './custom-reuse-strategy';
 import { AuthInterceptor } from './services/auth.interceptor';
 import { ConfigService } from './services/config.service';
+import { TimesheetSummaryModule } from './pages/REPORT PAGES/timesheet-summary/timesheet-summary.component';
 
 export function initializeApp(configService: ConfigService) {
   return () => configService.load(); 
@@ -69,6 +70,7 @@ export function initializeApp(configService: ConfigService) {
     TimeSheetEditFormModule,
     ResetPasswordModule,
     ChangePasswordModule,
+    TimesheetSummaryModule,
   ],
   providers: [
     AuthService,

@@ -1,87 +1,97 @@
 <div class="dx-theme-fluent dx-theme-fluent">
   <dx-validation-group #validationGroup>
-    <div class="view-wrapper topDiv d-flex mb-2 mt-0 flex-wrap" style="margin-bottom: 80px !important;">
-      <div class="headDiv align-items-center m-0 p-0 w-100 flex-wrap">
-        
-        <div class="inputBox ms-3 mt-3">
-          <dx-text-box
-            [(value)]="newUserData.EmployeeId"
-            label="Employee Id"
-            labelMode="floating"
-          >
-            <dx-validator>
-              <dxi-validation-rule type="required" message="Employee Id is required"></dxi-validation-rule>
-            </dx-validator>
-          </dx-text-box>
-        </div>
+    <!-- Table Section -->
+    <div class="table-container mt-4 mx-3">
+      <dx-data-grid
+        [height]="'60vh'"
+        id="gridContainerNew"
+        [dataSource]="timesheetEntries"
+        [showBorders]="true"
+        (onKeyDown)="onKeyDown($event)"
+      >
+        <dxo-toolbar>
+          <dxi-item location="before" template="headerTemplate"></dxi-item>
+          <dxi-item name="addRowButton"></dxi-item>
+        </dxo-toolbar>
+        <dxo-editing
+          mode="cell"
+          [allowUpdating]="true"
+          [allowAdding]="true"
+          [allowDeleting]="true"
+          newRowPosition="last"
+        ></dxo-editing>
 
-        <div class="inputBox ms-3 mt-3">
-          <dx-date-box
-            [(value)]="newUserData.TimeSheetDate"
-            label="Time Sheet Date"
-            labelMode="floating"
-          >
-            <dx-validator>
-              <dxi-validation-rule type="required" message="Time Sheet Date is required"></dxi-validation-rule>
-            </dx-validator>
-          </dx-date-box>
-        </div>
+        <dxi-column dataField="ProjectID" caption="Project">
+          <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
+          <dxo-lookup [dataSource]="projectList" displayExpr="ProjectName" valueExpr="Id"></dxo-lookup>
+        </dxi-column>
+        <dxi-column dataField="ActivityID" caption="Activity">
+          <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
+          <dxo-lookup [dataSource]="activityList" displayExpr="ActivityName" valueExpr="ID"></dxo-lookup>
+        </dxi-column>
+        <dxi-column dataField="Module">
+          <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
+        </dxi-column>
+        <dxi-column dataField="Remarks">
+          <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
+        </dxi-column>
+        <dxi-column dataField="Hour" dataType="number" [editorOptions]="{ min: 0, max: 24 }">
+          <dxi-validation-rule type="range" [min]="0" [max]="24"></dxi-validation-rule>
+        </dxi-column>
+        <dxi-column dataField="Minutes" dataType="number" [editorOptions]="{ min: 0, max: 59 }">
+          <dxi-validation-rule type="range" [min]="0" [max]="59"></dxi-validation-rule>
+        </dxi-column>
 
-        <div class="inputBox ms-3 mt-3">
-          <dx-text-box
-            [(value)]="newUserData.TimesheetId"
-            label="Timesheet Id"
-            labelMode="floating"
-          >
-            <dx-validator>
-              <dxi-validation-rule type="required" message="Timesheet Id is required"></dxi-validation-rule>
-            </dx-validator>
-          </dx-text-box>
-        </div>
+        <dxo-summary [calculateCustomSummary]="calculateTotalTime">
+          <dxi-total-item name="totalTime" summaryType="custom" displayFormat="Total: {0}" showInColumn="Hour"></dxi-total-item>
+        </dxo-summary>
 
-        <div class="inputBox ms-3 mt-3">
-          <dx-text-box
-            [(value)]="newUserData.Project_Id"
-            label="Project Id"
-            labelMode="floating"
-          >
-          </dx-text-box>
+        <div *dxTemplate="let data of 'headerTemplate'">
+          <div class="employee-header" style="width: 100%;">
+          </div>
+          <div class="d-flex" style="gap: 20px; align-items: center;">
+            <div style="width: 200px;">
+              <dx-date-box
+                [(value)]="newUserData.TimeSheetDate"
+                label="Date"
+                labelMode="floating"
+                [readOnly]="!isAdmin"
+                (onValueChanged)="onEmployeeOrDateChanged()"
+              ></dx-date-box>
+            </div>
+            <div style="width: 300px;">
+              <dx-text-box
+                *ngIf="!isAdmin"
+                [(value)]="loggedUserName"
+                label="Employee Name"
+                labelMode="floating"
+                [readOnly]="true"
+              ></dx-text-box>
+              <dx-select-box
+                *ngIf="isAdmin"
+                [(value)]="newUserData.EmployeeId"
+                [items]="userList"
+                valueExpr="ID"
+                displayExpr="EmployeeName"
+                label="Employee Name"
+                labelMode="floating"
+                placeholder="Select Employee"
+                (onValueChanged)="onEmployeeOrDateChanged()"
+              >
+                <dx-validator>
+                  <dxi-validation-rule type="required" message="Employee is required"></dxi-validation-rule>
+                </dx-validator>
+              </dx-select-box>
+            </div>
+          </div>
         </div>
-
-        <div class="inputBox ms-3 mt-3">
-          <dx-text-box
-            [(value)]="newUserData.Activity_Id"
-            label="Activity Id"
-            labelMode="floating"
-          >
-          </dx-text-box>
-        </div>
-
-        <div class="inputBox ms-3 mt-3">
-          <dx-text-box
-            [(value)]="newUserData.Remarks"
-            label="Remarks"
-            labelMode="floating"
-          >
-            <dx-validator>
-              <dxi-validation-rule type="required" message="Remarks are required"></dxi-validation-rule>
-            </dx-validator>
-          </dx-text-box>
-        </div>
-
-        <div class="inputBox ms-3 mt-3">
-          <dx-number-box
-            [(value)]="newUserData.Mintes"
-            label="Minutes"
-            labelMode="floating"
-          >
-            <dx-validator>
-              <dxi-validation-rule type="required" message="Minutes are required"></dxi-validation-rule>
-            </dx-validator>
-          </dx-number-box>
-        </div>
-
-      </div>
+      </dx-data-grid>
     </div>
+
+    <div class="form-popup-buttons-container" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+      <dx-button text="Cancel" stylingMode="outlined" type="normal" (onClick)="exitForm()"></dx-button>
+      <dx-button text="Save" stylingMode="contained" type="default" (onClick)="saveEntries()"></dx-button>
+    </div>
+
   </dx-validation-group>
 </div>

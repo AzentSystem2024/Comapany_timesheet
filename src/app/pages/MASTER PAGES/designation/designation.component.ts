@@ -39,7 +39,7 @@ export class DesignationComponent {
   @ViewChild(DesignationNewFormComponent, { static: false })
   designationNewForm!: DesignationNewFormComponent;
 
-  popupwidth: any = '65%';
+  popupwidth: any = '40%';
   isAddFormPopupOpened: boolean = false;
   isEditPopupOpened: boolean = false;
   selectedRowData: any;
@@ -52,13 +52,17 @@ export class DesignationComponent {
   isFilterRowVisible: boolean = false;
   currentPathName: string;
   initialized: boolean;
+  isAdmin: boolean = false;
   menuPrevilage: { CanAdd: boolean; CanEdit: boolean; CanDelete: boolean };
 
   datasource = new DataSource<any>({
     load: () =>
       new Promise((resolve, reject) => {
-        const storedData = JSON.parse(localStorage.getItem('DesignationMasterData') || '[]');
-        resolve(storedData);
+        const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+        this.service.get_Designation_List().subscribe({
+          next: (res: any) => resolve(res.data || res),
+          error: (err: any) => reject(err),
+        });
       }),
   });
 
@@ -73,7 +77,9 @@ export class DesignationComponent {
     this.route.url.subscribe((segments) => {
       const fullUrl = segments.map((s) => s.path).join('/');
       console.log(fullUrl);
-      this.menuPrevilage = this.dataService.getMenuPrevilages(fullUrl);
+      this.menuPrevilage = this.dataService.getMenuPrevilages(fullUrl) || { CanAdd: false, CanEdit: false, CanDelete: false };
+      const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+      this.isAdmin = logData.UserRoleName === 'Administrator';
     });
     this.addButtonOptions = {
       text: 'New',
@@ -81,7 +87,8 @@ export class DesignationComponent {
       type: 'default',
       stylingMode: 'contained',
       hint: 'Add new entry',
-      disabled: !this.menuPrevilage.CanAdd,
+      disabled: false,
+      visible: true,
       onClick: () => this.show_new_Form(),
       elementAttr: { class: 'add-button' },
     };
@@ -92,23 +99,19 @@ export class DesignationComponent {
   };
 
   getDesignationRowId(rowData: any) {
-    return rowData?.DesignationID ?? rowData?.ID ?? rowData?.UserID;
+    return rowData?.DesignationID ?? rowData?.ID ?? rowData?.UserID ?? rowData?.Id ?? rowData?.id;
   }
 
   onEditingRow(event: any): void {
     event.cancel = true;
     const Id = this.getDesignationRowId(event.data);
     this.isEditPopupOpened = true;
-    const storedData = JSON.parse(localStorage.getItem('DesignationMasterData') || '[]');
-    this.selectedRowData = storedData.find((item: any) => this.getDesignationRowId(item) === Id) || event.data;
+    this.selectedRowData = event.data;
     this.cdr.detectChanges();
   }
 
   canShowDelete = (e: any): boolean => {
-    return (
-      this.menuPrevilage.CanDelete &&
-      e.row?.data?.UserRoleName !== 'Administrator'
-    );
+    return true;
   };
 
   show_new_Form() {
@@ -119,20 +122,29 @@ export class DesignationComponent {
     const data = this.designationNewForm.getNewDesignationData();
     console.log(data, 'PAYLOAD IN SAVE');
     
-    let storedData = JSON.parse(localStorage.getItem('DesignationMasterData') || '[]');
-    data.DesignationID = new Date().getTime(); // give an ID
-    storedData.push(data);
-    localStorage.setItem('DesignationMasterData', JSON.stringify(storedData));
-
-    notify(
-      {
-        message: 'data saved successfully',
-        position: { at: 'top right', my: 'top right' },
-        displayTime: 500,
+    this.service.insert_Designation_Data(data).subscribe({
+      next: (res: any) => {
+        if(res.flag == "1") {
+          notify(
+            { message: 'data saved successfully', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'success'
+          );
+          this.isAddFormPopupOpened = false;
+          this.dataGrid.instance.refresh();
+        } else {
+          notify(
+            { message: res.message || 'Failed to save data', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'error'
+          );
+        }
       },
-      'success'
-    );
-    this.dataGrid.instance.refresh();
+      error: (err: any) => {
+        notify(
+          { message: 'Server error', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+          'error'
+        );
+      }
+    });
   }
 
   onClearData() {
@@ -141,22 +153,31 @@ export class DesignationComponent {
 
   onRowRemoving(event: any) {
     event.cancel = true;
-    let SelectedRow = event.key;
-    const Id = SelectedRow.DesignationID || SelectedRow.ID;
+    let SelectedRow = event.data || event.key;
+    const Id = this.getDesignationRowId(SelectedRow);
     
-    let storedData = JSON.parse(localStorage.getItem('DesignationMasterData') || '[]');
-    storedData = storedData.filter((item: any) => (item.DesignationID || item.ID) !== Id);
-    localStorage.setItem('DesignationMasterData', JSON.stringify(storedData));
-
-    notify(
-      {
-        message: 'Delete operation successful',
-        position: { at: 'top right', my: 'top right' },
-        displayTime: 500,
+    this.service.Remove_Designation_Row_Data(Id).subscribe({
+      next: (res: any) => {
+        if(res.flag == "1") {
+          notify(
+            { message: 'Delete operation successful', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'success'
+          );
+          this.dataGrid.instance.refresh();
+        } else {
+          notify(
+            { message: res.message || 'Failed to delete', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'error'
+          );
+        }
       },
-      'success'
-    );
-    this.dataGrid.instance.refresh();
+      error: (err: any) => {
+        notify(
+          { message: 'Server error', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+          'error'
+        );
+      }
+    });
   }
 
   refresh = () => {

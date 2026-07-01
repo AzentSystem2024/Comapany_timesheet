@@ -6,14 +6,18 @@ import {
   DxValidatorModule,
   DxButtonModule,
   DxValidationGroupModule,
-  DxValidationGroupComponent
+  DxValidationGroupComponent,
+  DxNumberBoxModule,
+  DxSelectBoxModule
 } from 'devextreme-angular';
 import notify from 'devextreme/ui/notify';
+
+import { MasterReportService } from '../../MASTER PAGES/master-report.service';
 
 @Component({
   selector: 'app-project-edit',
   templateUrl: './project-edit.component.html',
-  styleUrl: './project-edit.component.scss',
+  styleUrls: ['./project-edit.component.scss'],
 })
 export class ProjectEditComponent implements OnChanges {
   @ViewChild('validationGroup', { static: true }) validationGroup!: DxValidationGroupComponent;
@@ -21,10 +25,25 @@ export class ProjectEditComponent implements OnChanges {
   @Output() closeForm = new EventEmitter();
 
   newProjectData: any = {};
+  employeeDataSource: any[] = [];
+  statusList = [{ id: 0, text: 'Active' }, { id: 1, text: 'Inactive' }];
+
+  constructor(private service: MasterReportService) {
+    this.service.get_Employee_List().subscribe({
+      next: (res: any) => {
+        if (res && res.data) {
+          this.employeeDataSource = res.data;
+        } else if (Array.isArray(res)) {
+          this.employeeDataSource = res;
+        }
+      }
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['formdata'] && changes['formdata'].currentValue) {
       this.newProjectData = { ...this.formdata };
+      this.newProjectData.IsInactive = (this.formdata.IsInactive === 1 || this.formdata.IsInactive === true) ? 1 : 0;
     }
   }
 
@@ -32,25 +51,31 @@ export class ProjectEditComponent implements OnChanges {
     const validationResult = this.validationGroup.instance.validate();
     if (!validationResult.isValid) return;
 
-    let storedData = JSON.parse(localStorage.getItem('ProjectMasterData') || '[]');
-    const index = storedData.findIndex((item: any) => 
-      (item.ProjectID || item.ID) === (this.newProjectData.ProjectID || this.newProjectData.ID)
-    );
-    
-    if (index !== -1) {
-      storedData[index] = { ...this.newProjectData };
-      localStorage.setItem('ProjectMasterData', JSON.stringify(storedData));
-      notify(
-        { message: 'data updated successfully', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
-        'success'
-      );
-      this.close();
-    } else {
-      notify(
-        { message: 'Project not found', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
-        'error'
-      );
-    }
+    const dataToSave = { ...this.newProjectData };
+    dataToSave.IsInactive = dataToSave.IsInactive ? 1 : 0;
+
+    this.service.update_Project_data(dataToSave).subscribe({
+      next: (res: any) => {
+        if (res.flag == "1") {
+          notify(
+            { message: 'data updated successfully', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'success'
+          );
+          this.close();
+        } else {
+          notify(
+            { message: res.message || 'Failed to update', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+            'error'
+          );
+        }
+      },
+      error: (err: any) => {
+        notify(
+          { message: 'Server error', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
+          'error'
+        );
+      }
+    });
   }
 
   close() {
@@ -65,9 +90,11 @@ export class ProjectEditComponent implements OnChanges {
     DxTextBoxModule,
     DxValidatorModule,
     DxButtonModule,
-    DxValidationGroupModule
+    DxValidationGroupModule,
+    DxNumberBoxModule,
+    DxSelectBoxModule
   ],
   declarations: [ProjectEditComponent],
   exports: [ProjectEditComponent],
 })
-export class ProjectEditModule {}
+export class ProjectEditModule { }

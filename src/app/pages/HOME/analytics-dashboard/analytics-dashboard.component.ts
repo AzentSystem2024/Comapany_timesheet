@@ -117,6 +117,9 @@ export class AnalyticsDashboardComponent {
 
   // ============== load chart data =============
   loadChartData() {
+    this.loadingVisible = false;
+    // Bypassed API call as per user request to not use the chart component
+    /*
     this.loadingVisible = true;
     const inputData = {
       DateFrom: this.formatDate(this.fromDate),
@@ -153,6 +156,7 @@ export class AnalyticsDashboardComponent {
         console.error(err);
       },
     });
+    */
   }
 
   onGridContentReady(e: any) {

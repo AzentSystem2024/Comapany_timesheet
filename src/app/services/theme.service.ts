@@ -35,6 +35,11 @@ export class ThemeService {
 
     this.currentTheme = theme;
     this.isDark.next(this.currentTheme === 'dark');
+    if (this.currentTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
 
     const regTheme = this.isFluent() ? /\.[a-z]+$/ : /\.[a-z]+\.compact$/;
     const replaceTheme = this.isFluent() ? `.${theme}` : `.${theme}.compact`;

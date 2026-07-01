@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'app-designation-new-form',
   templateUrl: './designation-new-form.component.html',
-  styleUrl: './designation-new-form.component.scss',
+  styleUrls: ['./designation-new-form.component.scss'],
 })
 export class DesignationNewFormComponent {
   private defaultDesignationData = {

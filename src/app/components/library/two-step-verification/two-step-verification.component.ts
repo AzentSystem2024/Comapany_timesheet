@@ -250,7 +250,7 @@ export class TwoStepVerificationComponent implements OnInit, AfterViewInit {
         }
 
         this.inactive.setUserlogginValue();
-        this.router.navigateByUrl('/analytics-dashboard');
+        this.router.navigateByUrl('/employee-master');
       }
     }
   }

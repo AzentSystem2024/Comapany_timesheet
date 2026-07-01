@@ -81,8 +81,14 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    let path = 'analytics-dashboard';
-    let title = 'Dashboard';
+    const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+    const email = logData.emailID || logData.EmailID || logData.emailId || '';
+    const empName = logData.employeeName || logData.EmployeeName || '';
+    const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+
+    let path = isAdmin ? 'employee-master' : 'timesheet';
+    let title = isAdmin ? 'Employee Master' : 'Timesheet';
+
     this.tabs.push({
       title: title,
       path: path,
@@ -101,7 +107,7 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
     localStorage.clear();
     sessionStorage.clear();
   };
-  
+
   ngOnDestroy(): void {
     this.routerSubscription.unsubscribe();
     this.screenSubscription.unsubscribe();
@@ -188,7 +194,13 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
   }
 
   closeButtonHandler(tab: any) {
-    if (tab.path === 'analytics-dashboard') {
+    const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+    const email = logData.emailID || logData.EmailID || logData.emailId || '';
+    const empName = logData.employeeName || logData.EmployeeName || '';
+    const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+    const homePath = isAdmin ? 'employee-master' : 'timesheet';
+
+    if (tab.path === homePath) {
       return; // Don't allow deleting the home page
     }
 
@@ -238,4 +250,4 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
   exports: [SideNavOuterToolbarComponent],
   declarations: [SideNavOuterToolbarComponent],
 })
-export class SideNavOuterToolbarModule {}
+export class SideNavOuterToolbarModule { }

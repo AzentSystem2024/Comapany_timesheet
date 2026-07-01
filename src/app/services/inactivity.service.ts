@@ -39,11 +39,20 @@ export class InactivityService {
     const userid = sessionStorage.getItem('UserID');
     this.systemservice
       .get_securityPolicy_List(userid)
-      .subscribe((response: any) => {
-        if (response) {
-          const presentSecurityData = response.data[0];
-          this.inactivityTimeout =
-            presentSecurityData.SessionTimeoutMinutes * 60000;
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.data && response.data.length > 0) {
+            const presentSecurityData = response.data[0];
+            this.inactivityTimeout = presentSecurityData.SessionTimeoutMinutes * 60000;
+          } else {
+            this.inactivityTimeout = 60 * 60000; // default 60 minutes
+          }
+          this.isUserLoggedIn = true;
+          this.startWatching();
+          this.setupEvents();
+        },
+        error: (err: any) => {
+          this.inactivityTimeout = 60 * 60000; // default 60 minutes
           this.isUserLoggedIn = true;
           this.startWatching();
           this.setupEvents();
@@ -57,6 +66,9 @@ export class InactivityService {
   }
 
   startWatching() {
+    if (!this.inactivityTimeout) {
+      this.inactivityTimeout = 60 * 60000; // fallback just in case
+    }
     this.resetTimer();
   }
 
@@ -79,9 +91,7 @@ export class InactivityService {
             text: 'OK',
             onClick: () => {
               // No second logout API call needed
-              this.router.navigate(['/auth/login']).then(() => {
-                setTimeout(() => window.location.reload(), 250);
-              });
+              window.location.href = '/auth/login';
             },
           },
         ],

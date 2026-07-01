@@ -7,25 +7,6 @@
     <div class="employee-details">
       <div class="form-column">
         <dx-text-box
-          [(value)]="newEmployeeData.Employee_Number"
-          label="Employee No"
-          hint="Employee No"
-        >
-          <dx-validator>
-            <dxi-validation-rule
-              type="required"
-              message="Employee No is required"
-            ></dxi-validation-rule>
-          </dx-validator>
-        </dx-text-box>
-
-        <dx-text-box
-          [(value)]="newEmployeeData.Enrollment_No"
-          label="Enrollment No"
-          hint="Enrollment No"
-        ></dx-text-box>
-
-        <dx-text-box
           [(value)]="newEmployeeData.EmployeeName"
           label="Employee Name"
           hint="Employee Name"
@@ -43,22 +24,54 @@
           [(value)]="newEmployeeData.Address1"
           label="Address"
           hint="Address"
-          [height]="80"
-        ></dx-text-area>
+          [height]="170"
+        >
+          <dx-validator>
+            <dxi-validation-rule
+              type="required"
+              message="Address is required"
+            ></dxi-validation-rule>
+          </dx-validator>
+        </dx-text-area>
       </div>
 
       <div class="form-column">
         <dx-text-box
-          [(value)]="newEmployeeData.Mobile"
+          [(value)]="newEmployeeData.MobileNo"
           label="Mobile No."
           hint="Mobile No."
-          [maxLength]="17"
-          (input)="onPhoneInput($event, 'Mobile')"
+          [maxLength]="10"
+          (input)="onPhoneInput($event, 'MobileNo')"
         >
           <dx-validator>
             <dxi-validation-rule
               type="required"
               message="Mobile No is required"
+            ></dxi-validation-rule>
+            <dxi-validation-rule
+              type="stringLength"
+              [min]="10"
+              [max]="10"
+              message="Mobile No must be exactly 10 digits"
+            ></dxi-validation-rule>
+          </dx-validator>
+        </dx-text-box>
+
+        <dx-text-box
+          [(value)]="newEmployeeData.LoginPassword"
+          label="Login Password"
+          hint="Login Password"
+          [mode]="passwordMode"
+        >
+          <dxi-button
+            name="password"
+            location="after"
+            [options]="passwordButtonOptions"
+          ></dxi-button>
+          <dx-validator>
+            <dxi-validation-rule
+              type="required"
+              message="Password is required"
             ></dxi-validation-rule>
           </dx-validator>
         </dx-text-box>
@@ -67,16 +80,33 @@
           [(value)]="newEmployeeData.WhatsappNo"
           label="Whatsapp"
           hint="Whatsapp"
-          [maxLength]="17"
+          [maxLength]="10"
           (input)="onPhoneInput($event, 'WhatsappNo')"
-        ></dx-text-box>
+        >
+          <dx-validator>
+            <dxi-validation-rule
+              type="required"
+              message="Whatsapp No is required"
+            ></dxi-validation-rule>
+            <dxi-validation-rule
+              type="stringLength"
+              [min]="10"
+              [max]="10"
+              message="Whatsapp No must be exactly 10 digits"
+            ></dxi-validation-rule>
+          </dx-validator>
+        </dx-text-box>
 
         <dx-text-box
-          [(value)]="newEmployeeData.Emailid"
+          [(value)]="newEmployeeData.EmailID"
           label="Email"
           hint="Email"
         >
           <dx-validator>
+            <dxi-validation-rule
+              type="required"
+              message="Email is required"
+            ></dxi-validation-rule>
             <dxi-validation-rule
               type="email"
               message="Enter a valid Email"
@@ -88,53 +118,40 @@
             ></dxi-validation-rule>
           </dx-validator>
         </dx-text-box>
-
-        <dx-text-box
-          [(value)]="newEmployeeData.AlternateContactNo"
-          label="Alternate Contact No."
-          hint="Alternate Contact No."
-          [maxLength]="17"
-          (input)="onPhoneInput($event, 'AlternateContactNo')"
-        ></dx-text-box>
       </div>
 
       <div class="form-column">
-        <dx-number-box
+        <dx-select-box
           [(value)]="newEmployeeData.DesignationID"
-          label="Designation Id"
-          hint="Designation Id"
-        ></dx-number-box>
+          [items]="designationOptions"
+          valueExpr="ID"
+          displayExpr="Designation"
+          label="Designation"
+          placeholder="Select Designation"
+          hint="Designation"
+        >
+          <dx-validator>
+            <dxi-validation-rule type="required" message="Designation is required"></dxi-validation-rule>
+          </dx-validator>
+        </dx-select-box>
 
         <dx-select-box
-          [(value)]="newEmployeeData.sex"
-          [items]="sexOptions"
+          [(value)]="newEmployeeData.Sex"
+          [items]="[
+            { id: 1, text: 'Male' },
+            { id: 2, text: 'Female' },
+            { id: 3, text: 'Others' }
+          ]"
+          valueExpr="id"
+          displayExpr="text"
           label="Sex"
           placeholder="Select Sex"
           hint="Sex"
-        ></dx-select-box>
-
-        <dx-date-box
-          [(value)]="newEmployeeData.DateOfBirth"
-          label="Date of Birth"
-          type="date"
-          [displayFormat]="'dd/MM/yyyy'"
-          placeholder="Select Date of Birth"
-          stylingMode="outlined"
-          hint="Date of Birth"
-          [max]="maxDateOfBirth"
         >
           <dx-validator>
-            <dxi-validation-rule
-              type="required"
-              message="Date of Birth is required"
-            ></dxi-validation-rule>
-            <dxi-validation-rule
-              type="range"
-              [max]="maxDateOfBirth"
-              message="Employee must be at least 18 years old"
-            ></dxi-validation-rule>
+            <dxi-validation-rule type="required" message="Sex is required"></dxi-validation-rule>
           </dx-validator>
-        </dx-date-box>
+        </dx-select-box>
 
         <dx-date-box
           [(value)]="newEmployeeData.DateOfJoin"
@@ -144,25 +161,25 @@
           placeholder="Select Date of Join"
           stylingMode="outlined"
           hint="Date of Join"
-        ></dx-date-box>
+        >
+          <dx-validator>
+            <dxi-validation-rule type="required" message="Date of Join is required"></dxi-validation-rule>
+          </dx-validator>
+        </dx-date-box>
 
-        <dx-check-box
+        <dx-select-box
           [(value)]="newEmployeeData.IsWorking"
-          text="Is Working"
-          stylingMode="outlined"
-          hint="Is Working"
-        ></dx-check-box>
-
-        <dx-date-box
-          [(value)]="newEmployeeData.DateofRelieving"
-          label="Date of Relieving"
-          type="date"
-          [displayFormat]="'dd/MM/yyyy'"
-          placeholder="Select Date of Relieving"
-          stylingMode="outlined"
-          hint="Date of Relieving"
-          [disabled]="newEmployeeData.IsWorking"
-        ></dx-date-box>
+          [items]="[{ id: true, text: 'Working' }, { id: false, text: 'Not Working' }]"
+          valueExpr="id"
+          displayExpr="text"
+          label="Status"
+          placeholder="Select Status"
+          hint="Status"
+        >
+          <dx-validator>
+            <dxi-validation-rule type="required" message="Status is required"></dxi-validation-rule>
+          </dx-validator>
+        </dx-select-box>
       </div>
     </div>
 

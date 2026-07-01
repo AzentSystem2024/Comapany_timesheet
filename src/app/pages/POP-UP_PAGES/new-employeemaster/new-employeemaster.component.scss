@@ -1,6 +1,7 @@
 .employee-header {
   display: flex;
   align-items: center;
+  margin-top: 20px;
   margin-bottom: 10px;
 }
 
@@ -26,4 +27,8 @@
 
 .remarks-field {
   margin-top: 15px;
+}
+
+.address-field {
+  margin-top: 0px;
 }

@@ -1,8 +1,8 @@
 <div class="view-wrapper list-page">
   <dx-data-grid
+    #timeSheetGrid
     class="grid theme-dependent"
     noDataText=""
-    height="600"
     [dataSource]="datasource"
     [showBorders]="true"
     [allowColumnResizing]="true"
@@ -11,13 +11,13 @@
     rowAlternationInterval="2"
     (onEditingStart)="onEditingRow($event)"
     (onRowRemoving)="onRowRemoving($event)"
-    height="82vh"
+    height="78vh"
   >
     <dxo-paging [pageSize]="10"></dxo-paging>
     <dxo-editing
       mode="popup"
-      [allowUpdating]="menuPrevilage.CanEdit"
-      [allowDeleting]="menuPrevilage.CanDelete"
+      [allowUpdating]="true"
+      [allowDeleting]="true"
     >
     </dxo-editing>
     <dxo-pager
@@ -46,8 +46,9 @@
 
     <dxo-toolbar>
       <dxi-item location="before">
-        <div class="grid-header">Time Sheet</div>
+        <div class="grid-header" style="margin-right: 20px;">Timesheet</div>
       </dxi-item>
+      <dxi-item location="after" *ngIf="isAdmin" template="dateNavigatorTemplate" locateInMenu="never"></dxi-item>
       <dxi-item
         location="after"
         locateInMenu="auto"
@@ -88,35 +89,80 @@
       ></dxi-item>
     </dxo-toolbar>
 
-    <dxi-column dataField="EmployeeId" caption="Employee Id"></dxi-column>
-    <dxi-column dataField="TimeSheetDate" caption="Time Sheet Date" dataType="date"></dxi-column>
+    <dxi-column dataField="TimesheetDate" caption="Date" dataType="date" format="dd MMM yyyy" sortOrder="desc" *ngIf="!isAdmin"></dxi-column>
 
-    <dxi-column type="buttons">
-    <dxi-button
-      name="edit"
-      [visible]="menuPrevilage.CanEdit"
-    ></dxi-button>
-  </dxi-column>
+    <dxi-column caption="Sl No" cellTemplate="serialNoTemplate" [width]="70"></dxi-column>
+    <dxi-column dataField="EmployeeName" caption="Employee Name"></dxi-column>
+    <dxi-column dataField="TimesheetDate" caption="Timesheet Date" dataType="date" format="dd-MMM-yyyy"></dxi-column>
+    <dxi-column dataField="Hours" caption="Total Hours" dataType="number" format="#,##0.00"></dxi-column>
+    <dxi-column dataField="timeOfEntry" caption="Time of Entry" dataType="string" cellTemplate="timeTemplate"></dxi-column>
+
+    <div *dxTemplate="let data of 'serialNoTemplate'">
+      {{ data.component.pageIndex() * data.component.pageSize() + data.rowIndex + 1 }}
+    </div>
+
+    <dxi-column type="buttons" caption="Action" [width]="160">
+      <dxi-button
+        name="edit"
+        [visible]="isEditDeleteAllowed"
+      ></dxi-button>
+      <dxi-button
+        name="delete"
+        [visible]="isAdmin"
+      ></dxi-button>
+      <dxi-button
+        name="viewDetails"
+        hint="View Details"
+        [onClick]="onViewClick"
+        template="viewIconTemplate"
+      ></dxi-button>
+    </dxi-column>
+
+    <span *dxTemplate="let data of 'viewIconTemplate'">
+      <i class="bi bi-eye-fill" style="color: #007bff; font-size: 16px; cursor: pointer; vertical-align: middle;" title="View Details"></i>
+    </span>
+
+    <div *dxTemplate="let data of 'timeTemplate'">
+      {{ formatTime(data.data.timeOfEntry || data.data.TimeOfEntry) }}
+    </div>
+
+    <div *dxTemplate="let data of 'dateNavigatorTemplate'">
+      <div class="date-navigator d-flex align-items-center" style="gap: 10px;">
+        <dx-button icon="chevronleft" stylingMode="text" (onClick)="previousDate()"></dx-button>
+        <dx-date-box
+          [(value)]="selectedDate"
+          displayFormat="dd MMM yyyy"
+          type="date"
+          width="200"
+          [max]="todayDate"
+          [showClearButton]="false"
+          [elementAttr]="{ class: 'custom-date-box' }"
+          (onValueChanged)="onDateChanged($event)">
+        </dx-date-box>
+        <dx-button icon="chevronright" stylingMode="text" [disabled]="isNextDateDisabled()" (onClick)="nextDate()" [elementAttr]="{ class: 'date-nav-btn' }"></dx-button>
+      </div>
+    </div>
   </dx-data-grid>
-  <form-popup
+  <dx-popup
     class="formPopupClass"
     [(visible)]="isAddFormPopupOpened"
-    titleText="New Time Sheet"
-    [height]="'100vh'"
-    [width]="popupwidth"
-    (save)="onClickSaveNewData()"
-    (clear)="onClearData()"
+    title="New Timesheet"
+    height="auto"
+    [width]="'80vw'"
+    [showCloseButton]="true"
   >
-    <app-time-sheet-new-form></app-time-sheet-new-form>
-  </form-popup>
+    <app-time-sheet-new-form *ngIf="isAddFormPopupOpened" [selectedDate]="selectedDate" [existingTimesheets]="allTimesheets" (save)="onClickSaveNewData($event)" (close)="closeNewForm()"></app-time-sheet-new-form>
+  </dx-popup>
   <dx-popup
     [(visible)]="isEditPopupOpened"
-    title="Edit Time Sheet"
-    [height]="'100vh'"
-    [width]="popupwidth"
+    [title]="isViewMode ? 'View Time Sheet' : 'Edit Timesheet'"
+    height="auto"
+    [width]="'80vw'"
   >
     <app-time-sheet-edit-form
+      *ngIf="isEditPopupOpened"
       [formdata]="selectedRowData"
+      [isReadOnly]="isViewMode"
       (closeForm)="CloseEditForm()"
     ></app-time-sheet-edit-form>
   </dx-popup>

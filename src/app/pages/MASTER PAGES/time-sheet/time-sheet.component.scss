@@ -3,4 +3,57 @@
 .grid-header {
     @include header();
   }
- 
+
+::ng-deep .custom-date-box .dx-texteditor-input {
+  font-weight: bold;
+  color: #1a1a1a !important;
+  font-size: 15px; 
+  text-align: center; 
+}
+
+::ng-deep .date-nav-btn.dx-state-disabled {
+  cursor: not-allowed !important;
+}
+
+::ng-deep a.view-icon-btn,
+::ng-deep a.view-icon-btn i,
+::ng-deep a.view-icon-btn .dx-icon,
+::ng-deep .dx-icon-eye,
+::ng-deep i.dx-icon-eye,
+::ng-deep span.dx-icon-eye,
+::ng-deep a[title="View Details"],
+::ng-deep a[title="View Details"] i {
+  color: #ff004c !important; 
+  opacity: 1 !important;
+}
+::ng-deep .dx-command-edit .dx-link {
+  margin-right: 15px !important;
+}
+::ng-deep .dx-command-edit .dx-link:last-child {
+  margin-right: 0 !important;
+}
+
+::ng-deep .dx-command-edit {
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+::ng-deep .dx-datagrid-rowsview .dx-row > td {
+  font-weight: 500 !important;
+  font-size: 15px !important;
+}
+
+::ng-deep .dx-popup-title .dx-toolbar-label {
+  max-width: none !important;
+  width: auto !important;
+}
+
+::ng-deep .dx-popup-title .dx-toolbar-item-content {
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+::ng-deep .dx-popup-title .dx-toolbar-label > div {
+  text-overflow: clip !important;
+  white-space: normal !important;
+}
