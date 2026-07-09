@@ -7,6 +7,7 @@ import {
   DxValidationGroupComponent,
   DxValidationGroupModule,
   DxValidatorModule,
+  DxSwitchModule
 } from 'devextreme-angular';
 import { FormPopupModule } from 'src/app/components';
 import { UserService } from 'src/app/services/user.service';
@@ -40,6 +41,7 @@ export class ChangePasswordComponent implements OnInit {
   isPasswordVisible: boolean = false;
   isOldPasswordVisible: boolean = false;
   isSaving: boolean = false; // Property to track saving state
+  isTwoFactorEnabled: boolean = false;
 
   constructor(
     private service: MasterReportService,
@@ -93,59 +95,38 @@ export class ChangePasswordComponent implements OnInit {
       return; // Stop execution if the password does not meet the policy
     }
 
-    const PasswordData = {
-      UserID: this.UserID,
-      NewPassword: this.newPassword,
-      ChangePasswordOnLogin: false,
-      ModifiedFrom: this.UserID,
+    const reqData = {
+      UserID: parseInt(this.UserID),
+      OldPassword: this.oldPassword,
+      NewPassword: this.newPassword || '',
+      IsTwoFactorEnabled: this.isTwoFactorEnabled
     };
-    console.log(PasswordData, 'password form data');
 
-    this.service.reset_Password(PasswordData).subscribe((res) => {
-      try {
-        if (res.message === 'Success') {
-          notify(
-            {
-              message: 'Password Updated successfully',
-              position: { at: 'top right', my: 'top right' },
-              displayTime: 500,
-            },
-            'success'
-          );
-          // Navigate to login page after notification
-          setTimeout(() => {
-            this.authService.logOut();
-            this.authService.logOut().subscribe((response: any) => {
-              if (response) {
-                localStorage.removeItem('sidemenuItems');
-                localStorage.clear();
-                sessionStorage.clear();
-                this.reuseStrategy.clearStoredData();
-                this.route.navigate(['/auth/login']);
-              }
-            });
-          }); // Wait for notification to display before navigating
+    this.authService.updatePasswordAnd2FA(reqData).subscribe({
+      next: (res: any) => {
+        if (res.flag === '1') {
+          notify({ message: 'Updated Successfully', position: {at: 'top right', my: 'top right'}, displayTime: 1500}, 'success');
+          
+          // Update 2FA state in localStorage
+          const logDataStr = localStorage.getItem('logData');
+          if (logDataStr) {
+             try {
+                const logData = JSON.parse(logDataStr);
+                logData.IsTwoFactorEnabled = this.isTwoFactorEnabled;
+                localStorage.setItem('logData', JSON.stringify(logData));
+             } catch(e) {}
+          }
+
+          this.isSaving = false;
+          this.closeChangePassword();
         } else {
           this.isSaving = false;
-          notify(
-            {
-              message: res.message,
-              position: { at: 'top right', my: 'top right' },
-              displayTime: 500,
-            },
-            'error'
-          );
+          notify({ message: res.message || 'Update failed', position: {at: 'top right', my: 'top right'}}, 'error');
         }
-      } catch (error) {
+      },
+      error: (err: any) => {
         this.isSaving = false;
-        notify(
-          {
-            message: 'Password update operation failed',
-            position: { at: 'top right', my: 'top right' },
-            displayTime: 500,
-          },
-          'error'
-        );
+        notify({ message: 'Operation failed', position: {at: 'top right', my: 'top right'}}, 'error');
       }
     });
   }
@@ -167,7 +148,13 @@ export class ChangePasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.getSecurityPolicyData();
-    this.getUserPassword();
+    const logDataStr = localStorage.getItem('logData');
+    if (logDataStr) {
+      try {
+        const logData = JSON.parse(logDataStr);
+        this.isTwoFactorEnabled = logData.IsTwoFactorEnabled || logData.isTwoFactorEnabled || false;
+      } catch (e) {}
+    }
   }
 
   onOldPasswordValueChanged(event: any): void {
@@ -176,17 +163,7 @@ export class ChangePasswordComponent implements OnInit {
 
   // Custom validation function for old password
   validateOldPassword = (params: any): boolean => {
-    // // Check if oldPassword is set to avoid running validation unnecessarily
-    // if (!this.oldPassword || !this.getOldPassword) {
-    //   return false;
-    // }
-
-    if (this.oldPassword !== this.getOldPassword) {
-      params.rule.message = 'Incorrect password'; // Set custom error message
-      this.oldPasswordBorderColor = '2px solid green';
-      return false; // Validation fails
-    }
-    return true; // Validation passes
+    return true; // We rely on backend for validation
   };
 
   toggleShowConfirmPassword(): void {
@@ -194,10 +171,6 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   getUserPassword() {
-    this.service.get_User_Data_By_Id(this.UserID).subscribe((res: any) => {
-      this.getOldPassword = res.Password;
-      console.log(this.oldPassword, 'old password');
-    });
   }
 
   getSecurityPolicyData() {
@@ -232,7 +205,8 @@ export class ChangePasswordComponent implements OnInit {
 
   // Function to check if the password meets all security requirements
   checkPasswordStrength(): boolean {
-    // Skip password validation if not required
+    // Skip password validation if not required or if no new password is provided
+    if (!this.newPassword) return true;
     if (
       !this.securityPolicyData ||
       !this.securityPolicyData.PasswordValidationRequired
@@ -294,6 +268,7 @@ export class ChangePasswordComponent implements OnInit {
     FormPopupModule,
     DxValidatorModule,
     DxValidationGroupModule,
+    DxSwitchModule
   ],
   providers: [],
   exports: [],

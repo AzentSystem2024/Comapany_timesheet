@@ -174,6 +174,11 @@ export class AuthService {
     }
   }
 
+  updatePasswordAnd2FA(reqData: any) {
+    const API_URL = `${this.BaseURL}Employee/change-password`;
+    return this.http.post<any>(API_URL, reqData);
+  }
+
   async changePassword(email: string, recoveryCode: string) {
     try {
       return {

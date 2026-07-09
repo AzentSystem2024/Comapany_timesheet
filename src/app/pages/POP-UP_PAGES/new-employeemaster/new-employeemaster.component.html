@@ -36,26 +36,32 @@
       </div>
 
       <div class="form-column">
-        <dx-text-box
-          [(value)]="newEmployeeData.MobileNo"
-          label="Mobile No."
-          hint="Mobile No."
-          [maxLength]="10"
-          (input)="onPhoneInput($event, 'MobileNo')"
-        >
-          <dx-validator>
-            <dxi-validation-rule
-              type="required"
-              message="Mobile No is required"
-            ></dxi-validation-rule>
-            <dxi-validation-rule
-              type="stringLength"
-              [min]="10"
-              [max]="10"
-              message="Mobile No must be exactly 10 digits"
-            ></dxi-validation-rule>
-          </dx-validator>
-        </dx-text-box>
+        <div style="display: flex; gap: 5px; width: 100%;">
+          <dx-select-box
+            [(value)]="newEmployeeData.MobileCountryCode"
+            [items]="countryCodes"
+            valueExpr="code"
+            displayExpr="text"
+            width="120px"
+            placeholder="Code"
+            label="Code"
+            [searchEnabled]="true"
+          ></dx-select-box>
+          <dx-text-box
+            style="flex: 1"
+            [(value)]="newEmployeeData.MobileNo"
+            placeholder="Mobile No."
+            label="Mobile No."
+            hint="Mobile No."
+            [maxLength]="10"
+            (input)="onPhoneInput($event, 'MobileNo')"
+          >
+            <dx-validator>
+              <dxi-validation-rule type="required" message="Mobile No is required"></dxi-validation-rule>
+              <dxi-validation-rule type="stringLength" [max]="10" message="Mobile No must not exceed 10 digits"></dxi-validation-rule>
+            </dx-validator>
+          </dx-text-box>
+        </div>
 
         <dx-text-box
           [(value)]="newEmployeeData.LoginPassword"
@@ -76,26 +82,32 @@
           </dx-validator>
         </dx-text-box>
 
-        <dx-text-box
-          [(value)]="newEmployeeData.WhatsappNo"
-          label="Whatsapp"
-          hint="Whatsapp"
-          [maxLength]="10"
-          (input)="onPhoneInput($event, 'WhatsappNo')"
-        >
-          <dx-validator>
-            <dxi-validation-rule
-              type="required"
-              message="Whatsapp No is required"
-            ></dxi-validation-rule>
-            <dxi-validation-rule
-              type="stringLength"
-              [min]="10"
-              [max]="10"
-              message="Whatsapp No must be exactly 10 digits"
-            ></dxi-validation-rule>
-          </dx-validator>
-        </dx-text-box>
+        <div style="display: flex; gap: 5px; width: 100%; margin-bottom: 12px;">
+          <dx-select-box
+            [(value)]="newEmployeeData.WhatsappCountryCode"
+            [items]="countryCodes"
+            valueExpr="code"
+            displayExpr="text"
+            width="120px"
+            placeholder="Code"
+            label="Code"
+            [searchEnabled]="true"
+          ></dx-select-box>
+          <dx-text-box
+            style="flex: 1"
+            [(value)]="newEmployeeData.WhatsappNo"
+            placeholder="Whatsapp"
+            label="Whatsapp"
+            hint="Whatsapp"
+            [maxLength]="10"
+            (input)="onPhoneInput($event, 'WhatsappNo')"
+          >
+            <dx-validator>
+              <dxi-validation-rule type="required" message="Whatsapp No is required"></dxi-validation-rule>
+              <dxi-validation-rule type="stringLength" [max]="10" message="Whatsapp No must not exceed 10 digits"></dxi-validation-rule>
+            </dx-validator>
+          </dx-text-box>
+        </div>
 
         <dx-text-box
           [(value)]="newEmployeeData.EmailID"
@@ -115,6 +127,11 @@
               type="pattern"
               [pattern]="emailPattern"
               message="Email must contain @ and end with .com"
+            ></dxi-validation-rule>
+            <dxi-validation-rule
+              type="async"
+              message="Email already exists"
+              [validationCallback]="checkEmail"
             ></dxi-validation-rule>
           </dx-validator>
         </dx-text-box>
@@ -190,6 +207,9 @@
         hint="Remarks"
         [height]="80"
       ></dx-text-area>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
     </div>
   </div>
 </div>

@@ -19,6 +19,7 @@ import {
 } from 'devextreme-angular';
 import { FormPopupModule } from 'src/app/components';
 import notify from 'devextreme/ui/notify';
+import { confirm } from 'devextreme/ui/dialog';
 import { ReportService } from 'src/app/services/Report-data.service';
 import { MasterReportService } from '../master-report.service';
 import {
@@ -196,6 +197,37 @@ export class EmployeeMasterComponent {
   CloseEditForm() {
     this.isEditPopupOpened = false;
     this.dataGrid.instance.refresh();
+  }
+
+  reset2FAClick = (e: any) => {
+    const rowData = e.row.data;
+    let result = confirm(`Are you sure you want to reset 2FA for ${rowData.EmployeeName}?`, "Confirm Reset");
+    result.then((dialogResult) => {
+      if (dialogResult) {
+        this.service.reset2FA(rowData.ID).subscribe({
+          next: (res: any) => {
+            if (res.flag == "1") {
+              notify(
+                { message: '2FA reset successfully', position: { at: 'top right', my: 'top right' }, displayTime: 2000 },
+                'success'
+              );
+              this.refresh();
+            } else {
+              notify(
+                { message: res.message || 'Failed to reset 2FA', position: { at: 'top right', my: 'top right' }, displayTime: 2000 },
+                'error'
+              );
+            }
+          },
+          error: (err: any) => {
+            notify(
+              { message: 'Server error while resetting 2FA', position: { at: 'top right', my: 'top right' }, displayTime: 2000 },
+              'error'
+            );
+          }
+        });
+      }
+    });
   }
 }
 @NgModule({

@@ -190,6 +190,19 @@ export class LoginFormComponent implements OnInit {
     });
   }
 
+  onGenerateNewQRClick() {
+    const result = confirm(
+      'Are you sure you need to generate a new key?',
+      'Generate New QR'
+    );
+    result.then((dialogResult: boolean) => {
+      if (dialogResult) {
+        this.isSetup2FA = true;
+        this.fetch2FASetupInfo();
+      }
+    });
+  }
+
   onOtpInput(index: number, event: any) {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/[^0-9]/g, '');
@@ -227,19 +240,7 @@ export class LoginFormComponent implements OnInit {
     }
   }
 
-  onNextToOTP() {
-    this.showOTPInputForSetup = true;
-  }
 
-  onShowQRCode() {
-    if (this.isSetup2FA) {
-      this.showOTPInputForSetup = false;
-    } else {
-      this.isSetup2FA = true;
-      this.showOTPInputForSetup = false;
-      this.fetch2FASetupInfo();
-    }
-  }
 
   onVerifyOTP(e: Event) {
     e.preventDefault();

@@ -88,6 +88,16 @@ export class AppHeaderComponent implements OnInit {
         this.user.avatarUrl = hasPhoto
           ? storedUserPhoto
           : `https://ui-avatars.com/api/?name=${this.user.name || 'User'}&background=F44336&color=fff&rounded=true`;
+
+        // Check if admin and remove Change Password
+        const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+        const email = logData.emailID || logData.EmailID || logData.emailId || '';
+        const empName = logData.employeeName || logData.EmployeeName || this.user.name || '';
+        const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+
+        if (isAdmin) {
+          this.userMenuItems = this.userMenuItems.filter(item => item.text !== 'Change Password');
+        }
       }
     });
 

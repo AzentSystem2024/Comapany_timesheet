@@ -54,9 +54,9 @@
     <dxi-column dataField="EmailID" caption="Email"></dxi-column>
     <dxi-column dataField="SexName" caption="Gender"></dxi-column>
     <dxi-column dataField="IsWorking" caption="Status" cellTemplate="statusTemplate"></dxi-column>
-    <dxi-column type="buttons">
+    <dxi-column type="buttons" width="120">
       <dxi-button name="edit" [visible]="true"></dxi-button>
-
+      <dxi-button hint="Reset 2FA" icon="refresh" [onClick]="reset2FAClick"></dxi-button>
       <dxi-button name="delete" [visible]="canShowDelete"></dxi-button>
     </dxi-column>
 

@@ -1473,6 +1473,16 @@ export class MasterReportService {
     return this.http.get<any>(Url);
   }
 
+  checkEmailExists(email: string, excludeId: number = 0) {
+    const Url = `${this.BASE_URL}Employee/check-email?email=${encodeURIComponent(email)}&excludeId=${excludeId}`;
+    return this.http.get<any>(Url);
+  }
+
+  reset2FA(userId: number) {
+    const Url = `${this.BASE_URL}Employee/reset-2fa/${userId}`;
+    return this.http.post<any>(Url, {});
+  }
+
   insert_Employee_Data(employeeData: any) {
     const Url = `${this.BASE_URL}Employee/insert`;
     return this.http.post<any>(Url, employeeData);
