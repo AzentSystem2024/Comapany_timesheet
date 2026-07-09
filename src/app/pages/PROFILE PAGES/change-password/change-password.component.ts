@@ -205,14 +205,15 @@ export class ChangePasswordComponent implements OnInit {
 
   // Function to check if the password meets all security requirements
   checkPasswordStrength(): boolean {
-    // Skip password validation if not required or if no new password is provided
-    if (!this.newPassword) return true;
     if (
       !this.securityPolicyData ||
       !this.securityPolicyData.PasswordValidationRequired
     ) {
       return true;
     }
+
+    // Fail validation if no new password is provided but validation is required
+    if (!this.newPassword) return false;
 
     return (
       this.checkNumbers() &&

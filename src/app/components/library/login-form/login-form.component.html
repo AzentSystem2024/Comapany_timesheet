@@ -136,3 +136,72 @@
     </a>
   </div>
 </form>
+
+<dx-popup
+  [width]="400"
+  [height]="'auto'"
+  [showTitle]="true"
+  title="Force Password Change"
+  [dragEnabled]="false"
+  [closeOnOutsideClick]="false"
+  [showCloseButton]="false"
+  [(visible)]="isForcePasswordChangePopupVisible">
+  <div *dxTemplate="let data of 'content'">
+    <p>Your password was set by an administrator. You must change it before continuing.</p>
+    <form (submit)="onChangePasswordSubmit($event)">
+      <div class="dx-field mb-2">
+        <div class="dx-field-label">Old Password</div>
+        <div class="dx-field-value">
+          <dx-text-box 
+            mode="password" 
+            [(value)]="forcePasswordData.oldPassword" 
+            [readOnly]="true">
+          </dx-text-box>
+        </div>
+      </div>
+      <div class="dx-field mb-2">
+        <div class="dx-field-label">New Password</div>
+        <div class="dx-field-value">
+          <dx-text-box 
+            mode="password" 
+            [(value)]="forcePasswordData.newPassword">
+          </dx-text-box>
+        </div>
+      </div>
+      <div class="dx-field mb-2">
+        <div class="dx-field-label">Confirm Password</div>
+        <div class="dx-field-value">
+          <dx-text-box 
+            mode="password" 
+            [(value)]="forcePasswordData.confirmPassword">
+          </dx-text-box>
+        </div>
+      </div>
+      <!-- Password Security Policies -->
+      <ng-container *ngIf="securityPolicyData?.data && securityPolicyData.data[0] as policy">
+        <div *ngIf="policy.PasswordValidationRequired" style="font-size: 13px; margin-bottom: 15px; margin-left: 2px;">
+          <div *ngIf="policy.Numbers" [ngStyle]="{'color': checkNumbers() ? 'green' : 'red', 'margin-bottom': '4px'}">
+            <i class="dx-icon {{checkNumbers() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must contain a number
+          </div>
+          <div *ngIf="policy.UppercaseCharacters" [ngStyle]="{'color': checkUppercase() ? 'green' : 'red', 'margin-bottom': '4px'}">
+            <i class="dx-icon {{checkUppercase() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must contain an uppercase letter
+          </div>
+          <div *ngIf="policy.LowercaseCharacters" [ngStyle]="{'color': checkLowercase() ? 'green' : 'red', 'margin-bottom': '4px'}">
+            <i class="dx-icon {{checkLowercase() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must contain a lowercase letter
+          </div>
+          <div *ngIf="policy.SpecialCharacters" [ngStyle]="{'color': checkSpecialCharacters() ? 'green' : 'red', 'margin-bottom': '4px'}">
+            <i class="dx-icon {{checkSpecialCharacters() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must contain a special character
+          </div>
+          <div *ngIf="policy.MinimumLength > 0" [ngStyle]="{'color': checkMinimumLength() ? 'green' : 'red', 'margin-bottom': '4px'}">
+            <i class="dx-icon {{checkMinimumLength() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must be at least {{ policy.MinimumLength }} characters long
+          </div>
+        </div>
+      </ng-container>
+      
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px; gap: 10px;">
+        <dx-button text="Cancel" stylingMode="outlined" (onClick)="onForcePasswordPopupClose()"></dx-button>
+        <dx-button text="Submit" type="default" stylingMode="contained" [useSubmitBehavior]="true"></dx-button>
+      </div>
+    </form>
+  </div>
+</dx-popup>

@@ -114,42 +114,35 @@ export class SecurityPolicyComponent implements OnInit {
         if (response) {
           this.presentSecurityData = response.data[0];
           this.tooltipData = response.Tooltip;
-          this.validationRequired =
-            this.presentSecurityData.PasswordValidationRequired;
-          this.minPasswordLength = this.presentSecurityData.MinimumLength;
-          this.isNumberChecked = this.presentSecurityData.Numbers;
-          this.isUppercaseChecked =
-            this.presentSecurityData.UppercaseCharacters;
-          this.isLowercaseChecked =
-            this.presentSecurityData.LowercaseCharacters;
-          this.isSpecialCharactersChecked =
-            this.presentSecurityData.SpecialCharacters;
-          this.sessionTimeOut = this.presentSecurityData.SessionTimeoutMinutes;
-          this.LoginAttempts = this.presentSecurityData.AccountLockAttempt;
-          this.resetDuration = this.presentSecurityData.AccountLockDuration;
-          this.failedLoginDuration =
-            this.presentSecurityData.AccountLockFailedLogin;
-          this.changePasswordOnLogin =
-            this.presentSecurityData.UserMustChangePasswordOnLogin;
-          this.passwordExpiryDaysCount = this.presentSecurityData.PasswordAge;
-          this.passwordRepeatCycle =
-            this.presentSecurityData.PasswordRepeatCycle;
-          this.unautherizedMessage =
-            this.presentSecurityData.UnauthorizedBannerMessage;
-          this.disableUserOn =
-            this.presentSecurityData.DisableUserOnInactiveDays;
-          this.MFAvalidationRequired = this.presentSecurityData.EnableMFA;
-          this.isGoogleAuthenticator = this.presentSecurityData.MFAGoogle;
-          this.isMicrosoftAuthenticator = this.presentSecurityData.MFAMicrosoft;
-          this.isCustomAuthenticator = this.presentSecurityData.MFACustom;
+          if (this.presentSecurityData) {
+            this.validationRequired = this.presentSecurityData.PasswordValidationRequired;
+            this.readOnlyValue = !this.validationRequired;
+            this.minPasswordLength = this.presentSecurityData.MinimumLength;
+            this.isNumberChecked = this.presentSecurityData.Numbers;
+            this.isUppercaseChecked = this.presentSecurityData.UppercaseCharacters;
+            this.isLowercaseChecked = this.presentSecurityData.LowercaseCharacters;
+            this.isSpecialCharactersChecked = this.presentSecurityData.SpecialCharacters;
+            this.sessionTimeOut = this.presentSecurityData.SessionTimeoutMinutes;
+            this.LoginAttempts = this.presentSecurityData.AccountLockAttempt;
+            this.resetDuration = this.presentSecurityData.AccountLockDuration;
+            this.failedLoginDuration = this.presentSecurityData.AccountLockFailedLogin;
+            this.changePasswordOnLogin = this.presentSecurityData.UserMustChangePasswordOnLogin;
+            this.passwordExpiryDaysCount = this.presentSecurityData.PasswordAge;
+            this.passwordRepeatCycle = this.presentSecurityData.PasswordRepeatCycle;
+            this.unautherizedMessage = this.presentSecurityData.UnauthorizedBannerMessage;
+            this.disableUserOn = this.presentSecurityData.DisableUserOnInactiveDays;
+            this.MFAvalidationRequired = this.presentSecurityData.EnableMFA;
+            this.isGoogleAuthenticator = this.presentSecurityData.MFAGoogle;
+            this.isMicrosoftAuthenticator = this.presentSecurityData.MFAMicrosoft;
+            this.isCustomAuthenticator = this.presentSecurityData.MFACustom;
 
-          this.customSMS = this.presentSecurityData.MFASMS;
-          this.customEmail = this.presentSecurityData.MFAEmail;
-          this.customWhatsapp = this.presentSecurityData.MFAWhatsapp;
-          this.customSingleToken = this.presentSecurityData.MFASingleToken;
-          this.appliesToLogin = this.presentSecurityData.MFAOnLogin;
-          this.appliesToPasswordChange =
-            this.presentSecurityData.MFAOnPasswordChange;
+            this.customSMS = this.presentSecurityData.MFASMS;
+            this.customEmail = this.presentSecurityData.MFAEmail;
+            this.customWhatsapp = this.presentSecurityData.MFAWhatsapp;
+            this.customSingleToken = this.presentSecurityData.MFASingleToken;
+            this.appliesToLogin = this.presentSecurityData.MFAOnLogin;
+            this.appliesToPasswordChange = this.presentSecurityData.MFAOnPasswordChange;
+          }
 
           this.isLoading = false;
         }
@@ -252,24 +245,57 @@ export class SecurityPolicyComponent implements OnInit {
     this.customSingleToken = false;
   }
 
-  //========== only allow select one check box under the MFA ========
+  onMfaToggle(newValue: boolean): void {
+    if (newValue) {
+      if (!this.isGoogleAuthenticator && !this.isMicrosoftAuthenticator && !this.isCustomAuthenticator) {
+        // Use setTimeout to ensure model updates without Angular ExpressionChangedAfterItHasBeenCheckedError
+        setTimeout(() => {
+          this.isGoogleAuthenticator = true;
+        });
+      }
+    }
+  }
+
+  //========== allow multiple for Google/Microsoft, Custom is exclusive ========
   onCheckboxChanged(authType: string, isChecked: any): void {
-    if (!isChecked) return; // do nothing when unchecking
-    this.isGoogleAuthenticator = authType === 'google';
-    this.isMicrosoftAuthenticator = authType === 'microsoft';
-    this.isCustomAuthenticator = authType === 'custom';
+    if (!isChecked) {
+      // If MFA is required, ensure at least one method remains checked
+      if (this.MFAvalidationRequired) {
+        if (!this.isGoogleAuthenticator && !this.isMicrosoftAuthenticator && !this.isCustomAuthenticator) {
+          setTimeout(() => {
+            if (authType === 'google') this.isGoogleAuthenticator = true;
+            if (authType === 'microsoft') this.isMicrosoftAuthenticator = true;
+            if (authType === 'custom') this.isCustomAuthenticator = true;
+          });
+        }
+      }
+      return;
+    }
+
+    if (authType === 'custom') {
+      setTimeout(() => {
+        this.isGoogleAuthenticator = false;
+        this.isMicrosoftAuthenticator = false;
+      });
+    } else {
+      setTimeout(() => {
+        this.isCustomAuthenticator = false;
+      });
+    }
 
     if (authType !== 'custom') {
-      this.customSMS = false;
-      this.customEmail = false;
-      this.customWhatsapp = false;
-      this.customSingleToken = true;
+      setTimeout(() => {
+        this.customSMS = false;
+        this.customEmail = false;
+        this.customWhatsapp = false;
+        this.customSingleToken = true;
+      });
     }
   }
   //========== Change validation enable or not ====================
   onValidationEnableChange(newValue: boolean): void {
     this.validationRequired = newValue;
-    this.readOnlyValue = !this.readOnlyValue;
+    this.readOnlyValue = !newValue;
   }
 
   format_minutes(value: number): string {

@@ -106,6 +106,31 @@ export class SideNavigationMenuComponent
       });
     }
 
+    let systemMenu = navItems.find((m: any) => m.text === 'System' || (m.MenuName && m.MenuName.includes('System')));
+    if (!systemMenu) {
+      systemMenu = {
+        id: 'system-menu',
+        text: 'System',
+        path: undefined,
+        GroupID: '0',
+        icon: 'toolbox'
+      };
+      navItems.push(systemMenu);
+    } else {
+       systemMenu.path = undefined;
+       systemMenu.icon = 'toolbox';
+    }
+
+    const securityPolicyMenu = navItems.find((m: any) => m.path === 'security-policy');
+    if (!securityPolicyMenu) {
+      navItems.push({
+        id: 'security-policy-menu',
+        text: 'Security Policy',
+        path: 'security-policy',
+        GroupID: systemMenu.id
+      });
+    }
+
     const logData = JSON.parse(localStorage.getItem('logData') || '{}');
     const email = logData.emailID || logData.EmailID || logData.emailId || '';
     const empName = logData.employeeName || logData.EmployeeName || '';
@@ -113,7 +138,15 @@ export class SideNavigationMenuComponent
 
     if (!isAdmin) {
       navItems = navItems.filter((m: any) =>
-        !(m.text === 'Reports' || m.text === 'Sidebar Reports' || (m.MenuName && m.MenuName.includes('Report')) || m.path === 'timesheet-summary')
+        !(
+          m.text === 'Reports' || 
+          m.text === 'Sidebar Reports' || 
+          (m.MenuName && m.MenuName.includes('Report')) || 
+          m.path === 'timesheet-summary' ||
+          m.text === 'System' ||
+          (m.MenuName && m.MenuName.includes('System')) ||
+          m.path === 'security-policy'
+        )
       );
     }
 

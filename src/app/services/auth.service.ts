@@ -126,6 +126,13 @@ export class AuthService {
     });
   }
 
+  changePasswordTemp(tempToken: string, reqBody: any) {
+    const API_URL = `${this.BaseURL}Employee/change-password`;
+    return this.http.post<any>(API_URL, reqBody, {
+      headers: { Authorization: `Bearer ${tempToken}` }
+    });
+  }
+
   getMenuData() {
     return this.menuData.asObservable();
   }

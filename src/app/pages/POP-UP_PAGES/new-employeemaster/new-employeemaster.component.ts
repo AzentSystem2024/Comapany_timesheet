@@ -12,6 +12,7 @@ import {
   DxButtonModule,
   DxSwitchModule
 } from 'devextreme-angular';
+import { SystemServicesService } from '../../SYSTEM PAGES/system-services.service';
 
 @Component({
   selector: 'app-new-employeemaster',
@@ -220,7 +221,12 @@ export class NewEmployeemasterComponent implements OnInit {
     }
   };
 
-  constructor(private masterReportService: MasterReportService) {
+  securityPolicy: any = null;
+
+  constructor(
+    private masterReportService: MasterReportService,
+    private systemServicesService: SystemServicesService
+  ) {
     const today = new Date();
     this.maxDateOfBirth = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
   }
@@ -234,7 +240,46 @@ export class NewEmployeemasterComponent implements OnInit {
       },
       error: (err: any) => console.error("Failed to load designations", err)
     });
+
+    const userId = sessionStorage.getItem('UserID') || '0';
+    this.systemServicesService.get_securityPolicy_List(userId).subscribe({
+      next: (res: any) => {
+        if (res && res.data && res.data.length > 0) {
+          this.securityPolicy = res.data[0];
+        }
+      },
+      error: (err: any) => console.error("Failed to load security policy", err)
+    });
   }
+
+  validatePassword = (params: any) => {
+    const password = params.value;
+    if (!password) return true; // Required validation handles empty case
+    if (!this.securityPolicy || !this.securityPolicy.PasswordValidationRequired) return true;
+    
+    if (this.securityPolicy.MinimumLength && password.length < this.securityPolicy.MinimumLength) {
+      params.rule.message = `Password must be at least ${this.securityPolicy.MinimumLength} characters`;
+      return false;
+    }
+    if (this.securityPolicy.Numbers && !/\d/.test(password)) {
+      params.rule.message = 'Password must contain at least 1 number';
+      return false;
+    }
+    if (this.securityPolicy.UppercaseCharacters && !/[A-Z]/.test(password)) {
+      params.rule.message = 'Password must contain at least 1 uppercase character';
+      return false;
+    }
+    if (this.securityPolicy.LowercaseCharacters && !/[a-z]/.test(password)) {
+      params.rule.message = 'Password must contain at least 1 lowercase character';
+      return false;
+    }
+    if (this.securityPolicy.SpecialCharacters && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      params.rule.message = 'Password must contain at least 1 special character';
+      return false;
+    }
+    
+    return true;
+  };
 
   private defaultEmployeeData = {
     EmployeeName: '',

@@ -60,6 +60,13 @@ export class LoginFormComponent implements OnInit {
   otpCode: string = '';
   otpDigits: string[] = ['', '', '', '', '', ''];
 
+  isForcePasswordChangePopupVisible: boolean = false;
+  forcePasswordData: any = {
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  };
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -80,9 +87,96 @@ export class LoginFormComponent implements OnInit {
     this.isPasswordVisible = !this.isPasswordVisible;
   };
 
+
+  onChangePasswordSubmit(e: Event) {
+    e.preventDefault();
+    if (!this.forcePasswordData.newPassword || !this.forcePasswordData.confirmPassword) {
+      this.showNotify("Please fill in all password fields", "error");
+      return;
+    }
+    if (this.forcePasswordData.newPassword !== this.forcePasswordData.confirmPassword) {
+      this.showNotify("New Password and Confirm Password do not match", "error");
+      return;
+    }
+    
+    if (!this.checkPasswordStrength()) {
+      this.showNotify("New password does not meet the security requirements.", "error");
+      return;
+    }
+    
+    this.sharedService.triggerLoadComponent(true);
+    const req = {
+      UserID: this.loginResponse.data.ID || this.loginResponse.data.UserID,
+      OldPassword: this.forcePasswordData.oldPassword,
+      NewPassword: this.forcePasswordData.newPassword,
+      IsTwoFactorEnabled: false
+    };
+
+    this.authService.changePasswordTemp(this.tempToken, req).subscribe({
+      next: async (res: any) => {
+        if (res.flag == "1") {
+          this.showNotify("Password changed successfully", "success");
+          this.isForcePasswordChangePopupVisible = false;
+          await this.attemptLogin(this.formData.username, this.forcePasswordData.newPassword, false);
+        } else {
+          this.showNotify(res.message, "error");
+          this.sharedService.triggerLoadComponent(false);
+        }
+      },
+      error: (err: any) => {
+        this.showNotify("Failed to change password", "error");
+        this.sharedService.triggerLoadComponent(false);
+      }
+    });
+  }
+
   changePasswordMode() {
-    debugger;
     this.passwordMode = this.passwordMode === 'text' ? 'password' : 'text';
+  }
+
+  checkPasswordStrength(): boolean {
+    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    if (!policy || !policy.PasswordValidationRequired) return true;
+    
+    return this.checkNumbers() &&
+           this.checkUppercase() &&
+           this.checkLowercase() &&
+           this.checkSpecialCharacters() &&
+           this.checkMinimumLength();
+  }
+
+  checkNumbers(): boolean {
+    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    if (!policy || !policy.Numbers) return true;
+    return /\d/.test(this.forcePasswordData.newPassword || '');
+  }
+
+  checkUppercase(): boolean {
+    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    if (!policy || !policy.UppercaseCharacters) return true;
+    return /[A-Z]/.test(this.forcePasswordData.newPassword || '');
+  }
+
+  checkLowercase(): boolean {
+    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    if (!policy || !policy.LowercaseCharacters) return true;
+    return /[a-z]/.test(this.forcePasswordData.newPassword || '');
+  }
+
+  checkSpecialCharacters(): boolean {
+    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    if (!policy || !policy.SpecialCharacters) return true;
+    return /[!@#$%^&*(),.?":{}|<>]/.test(this.forcePasswordData.newPassword || '');
+  }
+
+  checkMinimumLength(): boolean {
+    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    if (!policy || !policy.MinimumLength) return true;
+    return (this.forcePasswordData.newPassword || '').length >= policy.MinimumLength;
+  }
+
+  onForcePasswordPopupClose() {
+    this.isForcePasswordChangePopupVisible = false;
   }
 
   async onSubmit(e: Event) {
@@ -148,6 +242,13 @@ export class LoginFormComponent implements OnInit {
         this.isSetup2FA = false;
         this.showOTPInputForSetup = false;
         this.tempToken = response.tempToken;
+        this.sharedService.triggerLoadComponent(false);
+      } else if (response.flag == 12) {
+        this.tempToken = response.tempToken;
+        this.isForcePasswordChangePopupVisible = true;
+        this.forcePasswordData.oldPassword = password;
+        this.forcePasswordData.newPassword = '';
+        this.forcePasswordData.confirmPassword = '';
         this.sharedService.triggerLoadComponent(false);
       } else if (response.flag == 2 && !forcelogin) {
         this.sharedService.triggerLoadComponent(false);

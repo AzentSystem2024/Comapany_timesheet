@@ -79,6 +79,11 @@
               type="required"
               message="Password is required"
             ></dxi-validation-rule>
+            <dxi-validation-rule
+              type="custom"
+              message="Password does not meet the security policy requirements"
+              [validationCallback]="validatePassword"
+            ></dxi-validation-rule>
           </dx-validator>
         </dx-text-box>
 
@@ -207,6 +212,7 @@
         hint="Remarks"
         [height]="80"
       ></dx-text-area>
+
     </div>
 
     <div style="display: flex; justify-content: flex-end; margin-top: 15px;">

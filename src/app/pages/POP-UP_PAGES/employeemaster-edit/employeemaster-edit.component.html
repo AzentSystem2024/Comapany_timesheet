@@ -101,6 +101,18 @@
               location="after"
               [options]="passwordButtonOptions"
             ></dxi-button>
+            <dxi-button
+              name="generatePassword"
+              location="after"
+              [options]="generatePasswordButtonOptions"
+            ></dxi-button>
+            <dx-validator>
+              <dxi-validation-rule
+                type="custom"
+                message="Password does not meet the security policy requirements"
+                [validationCallback]="validatePassword"
+              ></dxi-validation-rule>
+            </dx-validator>
           </dx-text-box>
         </div>
 
@@ -143,6 +155,7 @@
 
       <div class="remarks-field">
         <dx-text-area [(value)]="newEmployeeData.Remarks" label="Remarks" hint="Remarks" [height]="80"></dx-text-area>
+
       </div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
@@ -156,3 +169,31 @@
     <dx-button text="Save" stylingMode="contained" type="default" (onClick)="onSaveClick()"></dx-button>
   </div>
 </dx-validation-group>
+
+<dx-popup
+  [width]="400"
+  [height]="250"
+  [showTitle]="true"
+  title="Password Reset Successful"
+  [dragEnabled]="false"
+  [closeOnOutsideClick]="false"
+  [showCloseButton]="false"
+  [(visible)]="isPasswordPopupVisible">
+  <div *dxTemplate="let data of 'content'">
+    <p>Please copy the new password and provide it to the employee securely:</p>
+    <div style="display: flex; align-items: center; justify-content: center; margin: 20px 0;">
+      <span style="font-size: 18px; letter-spacing: 1px; margin-right: 15px; background: #f0f0f0; padding: 5px 10px; border-radius: 4px;">
+        {{ generatedPasswordToShow }}
+      </span>
+      <dx-button
+        icon="copy"
+        hint="Copy Password"
+        stylingMode="text"
+        (onClick)="copyPassword()">
+      </dx-button>
+    </div>
+    <div style="display: flex; justify-content: center; margin-top: 20px;">
+      <dx-button text="OK" type="default" stylingMode="contained" (onClick)="onPasswordPopupClose()"></dx-button>
+    </div>
+  </div>
+</dx-popup>

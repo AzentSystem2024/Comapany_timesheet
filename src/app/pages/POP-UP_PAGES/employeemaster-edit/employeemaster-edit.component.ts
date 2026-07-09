@@ -11,10 +11,12 @@ import {
   DxButtonModule,
   DxValidationGroupModule,
   DxValidationGroupComponent,
-  DxSwitchModule
+  DxSwitchModule,
+  DxPopupModule
 } from 'devextreme-angular';
 import notify from 'devextreme/ui/notify';
 import { MasterReportService } from '../../MASTER PAGES/master-report.service';
+import { SystemServicesService } from '../../SYSTEM PAGES/system-services.service';
 
 @Component({
   selector: 'app-employeemaster-edit',
@@ -231,7 +233,55 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
     }
   };
 
-  constructor(private service: MasterReportService) {
+  generatePasswordButtonOptions: any = {
+    icon: 'key',
+    stylingMode: 'text',
+    hint: 'Generate Random Password',
+    onClick: () => {
+      this.generateRandomPassword();
+    }
+  };
+
+  generateRandomPassword() {
+    let charset = "abcdefghijklmnopqrstuvwxyz";
+    let password = "";
+    
+    if (this.securityPolicy && this.securityPolicy.PasswordValidationRequired) {
+      if (this.securityPolicy.UppercaseCharacters) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      if (this.securityPolicy.Numbers) charset += "0123456789";
+      if (this.securityPolicy.SpecialCharacters) charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+      
+      const length = this.securityPolicy.MinimumLength && this.securityPolicy.MinimumLength > 8 ? this.securityPolicy.MinimumLength : 8;
+      
+      if (this.securityPolicy.UppercaseCharacters) password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
+      if (this.securityPolicy.Numbers) password += "0123456789"[Math.floor(Math.random() * 10)];
+      if (this.securityPolicy.SpecialCharacters) password += "!@#$%^&*"[Math.floor(Math.random() * 8)];
+      if (this.securityPolicy.LowercaseCharacters) password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
+      
+      while (password.length < length) {
+        password += charset[Math.floor(Math.random() * charset.length)];
+      }
+      
+      // Shuffle password
+      password = password.split('').sort(() => 0.5 - Math.random()).join('');
+    } else {
+      charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+      for (let i = 0; i < 8; i++) {
+        password += charset[Math.floor(Math.random() * charset.length)];
+      }
+    }
+    
+    this.newEmployeeData.LoginPassword = password;
+    this.passwordMode = 'text';
+    this.passwordButtonOptions.icon = 'eyeclose';
+  }
+
+  securityPolicy: any = null;
+
+  constructor(
+    private service: MasterReportService,
+    private systemServicesService: SystemServicesService
+  ) {
     const today = new Date();
     this.maxDateOfBirth = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
   }
@@ -245,7 +295,46 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
       },
       error: (err: any) => console.error("Failed to load designations", err)
     });
+
+    const userId = sessionStorage.getItem('UserID') || '0';
+    this.systemServicesService.get_securityPolicy_List(userId).subscribe({
+      next: (res: any) => {
+        if (res && res.data && res.data.length > 0) {
+          this.securityPolicy = res.data[0];
+        }
+      },
+      error: (err: any) => console.error("Failed to load security policy", err)
+    });
   }
+
+  validatePassword = (params: any) => {
+    const password = params.value;
+    if (!password) return true; // Required validation handles empty case
+    if (!this.securityPolicy || !this.securityPolicy.PasswordValidationRequired) return true;
+    
+    if (this.securityPolicy.MinimumLength && password.length < this.securityPolicy.MinimumLength) {
+      params.rule.message = `Password must be at least ${this.securityPolicy.MinimumLength} characters`;
+      return false;
+    }
+    if (this.securityPolicy.Numbers && !/\d/.test(password)) {
+      params.rule.message = 'Password must contain at least 1 number';
+      return false;
+    }
+    if (this.securityPolicy.UppercaseCharacters && !/[A-Z]/.test(password)) {
+      params.rule.message = 'Password must contain at least 1 uppercase character';
+      return false;
+    }
+    if (this.securityPolicy.LowercaseCharacters && !/[a-z]/.test(password)) {
+      params.rule.message = 'Password must contain at least 1 lowercase character';
+      return false;
+    }
+    if (this.securityPolicy.SpecialCharacters && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      params.rule.message = 'Password must contain at least 1 special character';
+      return false;
+    }
+    
+    return true;
+  };
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['formdata'] && changes['formdata'].currentValue) {
@@ -304,6 +393,20 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
     this.newEmployeeData[fieldName] = sanitizedValue;
   }
 
+  isPasswordPopupVisible: boolean = false;
+  generatedPasswordToShow: string = '';
+
+  copyPassword() {
+    navigator.clipboard.writeText(this.generatedPasswordToShow).then(() => {
+      notify({ message: 'Password copied to clipboard', position: { at: 'top right', my: 'top right' }, displayTime: 1000 }, 'success');
+    });
+  }
+
+  onPasswordPopupClose() {
+    this.isPasswordPopupVisible = false;
+    this.close();
+  }
+
   onSaveClick() {
     const validationResult = this.validationGroup.instance.validate();
     if (!validationResult.isValid) return;
@@ -323,7 +426,12 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
             { message: 'data updated successfully', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
             'success'
           );
-          this.close();
+          if (dataToSave.LoginPassword && dataToSave.LoginPassword.trim() !== '') {
+            this.generatedPasswordToShow = dataToSave.LoginPassword;
+            this.isPasswordPopupVisible = true;
+          } else {
+            this.close();
+          }
         } else {
           notify(
             { message: res.message || 'Failed to update data', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
@@ -374,7 +482,8 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
     DxValidatorModule,
     DxButtonModule,
     DxValidationGroupModule,
-    DxSwitchModule
+    DxSwitchModule,
+    DxPopupModule
   ],
   declarations: [EmployeemasterEditComponent],
   exports: [EmployeemasterEditComponent],

@@ -17,7 +17,6 @@
         text="Save"
         type="default"
         (onClick)="onClickSave()"
-        [disabled]="!menuPrevilage.CanEdit"
       ></dx-button>
     </div>
   </div>
@@ -93,6 +92,7 @@
             [(value)]="MFAvalidationRequired"
             [switchedOnText]="'Yes'"
             [switchedOffText]="'No'"
+            (onValueChanged)="onMfaToggle($event.value)"
           ></dx-switch>
           <label class="ms-2 headingText">
             Enable Multi-factor Authentication
@@ -164,21 +164,7 @@
             </div>
           </div>
         </div>
-        <div *ngIf="MFAvalidationRequired">
-          <label class="fw-bold d-block mb-2"
-            >Multi-factor authentication applies to:</label
-          >
-          <dx-check-box
-            class="d-inline-block me-4"
-            [(value)]="appliesToLogin"
-            text="Login Attempts"
-          ></dx-check-box>
-          <dx-check-box
-            class="d-inline-block"
-            [(value)]="appliesToPasswordChange"
-            text="Password Changes"
-          ></dx-check-box>
-        </div>
+
       </div>
     </div>
 
@@ -261,32 +247,7 @@
     </div>
   </div>
 
-  <div class="OthersBorderBox p-3">
-    <div class="headingText">Others</div>
-    <div class="d-flex gap-3 flex-nowrap w-100">
-      <div style="width: 70%; min-width: 0">
-        <dx-text-box
-          labelMode="floating"
-          labelLocation="left"
-          label="Unauthorized Banner Message"
-          [(value)]="unautherizedMessage"
-          width="100%"
-          hint="This message will be shown on successful login or at the time of unsuccessful access attempts"
-        ></dx-text-box>
-      </div>
 
-      <div style="width: 30%; min-width: 0">
-        <dx-number-box
-          [(value)]="disableUserOn"
-          labelMode="floating"
-          labelLocation="left"
-          label="Disable User On"
-          width="100%"
-          hint="Enter the number of days to disable the user after inactivity"
-        ></dx-number-box>
-      </div>
-    </div>
-  </div>
 </div>
 
 <dx-load-panel
