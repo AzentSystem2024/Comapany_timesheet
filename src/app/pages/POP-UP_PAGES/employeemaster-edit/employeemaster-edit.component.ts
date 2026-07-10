@@ -223,15 +223,8 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
   emailPattern: any = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.com$/;
   maxDateOfBirth: Date;
   designationOptions: any[] = [];
+  // Eye button removed as per request
   passwordMode: 'password' | 'text' = 'password';
-  passwordButtonOptions: any = {
-    icon: 'eyeopen',
-    stylingMode: 'text',
-    onClick: () => {
-      this.passwordMode = this.passwordMode === 'text' ? 'password' : 'text';
-      this.passwordButtonOptions.icon = this.passwordMode === 'text' ? 'eyeclose' : 'eyeopen';
-    }
-  };
 
   generatePasswordButtonOptions: any = {
     icon: 'key',
@@ -273,7 +266,6 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
 
     this.newEmployeeData.LoginPassword = password;
     this.passwordMode = 'text';
-    this.passwordButtonOptions.icon = 'eyeclose';
   }
 
   securityPolicy: any = null;
