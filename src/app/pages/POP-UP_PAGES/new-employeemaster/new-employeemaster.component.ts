@@ -256,7 +256,7 @@ export class NewEmployeemasterComponent implements OnInit {
     const password = params.value;
     if (!password) return true; // Required validation handles empty case
     if (!this.securityPolicy || !this.securityPolicy.PasswordValidationRequired) return true;
-    
+
     if (this.securityPolicy.MinimumLength && password.length < this.securityPolicy.MinimumLength) {
       params.rule.message = `Password must be at least ${this.securityPolicy.MinimumLength} characters`;
       return false;
@@ -277,7 +277,7 @@ export class NewEmployeemasterComponent implements OnInit {
       params.rule.message = 'Password must contain at least 1 special character';
       return false;
     }
-    
+
     return true;
   };
 
@@ -371,4 +371,4 @@ export class NewEmployeemasterComponent implements OnInit {
   declarations: [NewEmployeemasterComponent],
   exports: [NewEmployeemasterComponent],
 })
-export class NewEmployeemasterModule {}
+export class NewEmployeemasterModule { }

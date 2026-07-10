@@ -55,7 +55,14 @@ export class ResetPasswordFormComponent implements OnInit, OnDestroy {
   isVerifyOtpButtonDisabled: boolean = false;
   isSubmitPasswordButtonDisabled: boolean = true;
   UserID: number = 0;
-  securityPolicyData: any;
+  securityPolicyData: any = {
+    Numbers: true,
+    UppercaseCharacters: true,
+    LowercaseCharacters: true,
+    SpecialCharacters: true,
+    MinimumLength: 8,
+    PasswordValidationRequired: true
+  };
   confirmPasswordBorderColor: string = '1px solid #ddd'; // Default border color
   isPasswordVisible: boolean = false;
   isConfirmPasswordVisible: boolean = false;
@@ -70,14 +77,14 @@ export class ResetPasswordFormComponent implements OnInit, OnDestroy {
     },
   ];
 
-  EmailEnabled:boolean = false;
-  SmsEnabled:boolean = false;
+  EmailEnabled: boolean = false;
+  SmsEnabled: boolean = false;
   constructor(
     private router: Router,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
     private userservice: MasterReportService
-  ) {}
+  ) { }
 
   validateEmailOrPhone(value: string): boolean {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -495,4 +502,5 @@ export class ResetPasswordFormComponent implements OnInit, OnDestroy {
   declarations: [ResetPasswordFormComponent],
   exports: [ResetPasswordFormComponent],
 })
-export class ResetPasswordFormModule {}
+export class ResetPasswordFormModule { }
+

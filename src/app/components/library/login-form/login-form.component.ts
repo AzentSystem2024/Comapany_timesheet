@@ -48,7 +48,14 @@ export class LoginFormComponent implements OnInit {
 
   loginResponse: any;
   SingleToken: boolean = false;
-  securityPolicyData: any;
+  securityPolicyData: any = {
+    Numbers: true,
+    UppercaseCharacters: true,
+    LowercaseCharacters: true,
+    SpecialCharacters: true,
+    MinimumLength: 8,
+    PasswordValidationRequired: true
+  };
 
   is2FAState: boolean = false;
   isSetup2FA: boolean = false;
@@ -59,6 +66,10 @@ export class LoginFormComponent implements OnInit {
   tempToken: string = '';
   otpCode: string = '';
   otpDigits: string[] = ['', '', '', '', '', ''];
+  mfaProvider: string = 'Google';
+
+  isNewPasswordVisible = false;
+  isConfirmPasswordVisible = false;
 
   isForcePasswordChangePopupVisible: boolean = false;
   forcePasswordData: any = {
@@ -87,6 +98,14 @@ export class LoginFormComponent implements OnInit {
     this.isPasswordVisible = !this.isPasswordVisible;
   };
 
+  toggleNewPasswordVisibility = () => {
+    this.isNewPasswordVisible = !this.isNewPasswordVisible;
+  };
+
+  toggleConfirmPasswordVisibility = () => {
+    this.isConfirmPasswordVisible = !this.isConfirmPasswordVisible;
+  };
+
 
   onChangePasswordSubmit(e: Event) {
     e.preventDefault();
@@ -98,12 +117,12 @@ export class LoginFormComponent implements OnInit {
       this.showNotify("New Password and Confirm Password do not match", "error");
       return;
     }
-    
+
     if (!this.checkPasswordStrength()) {
       this.showNotify("New password does not meet the security requirements.", "error");
       return;
     }
-    
+
     this.sharedService.triggerLoadComponent(true);
     const req = {
       UserID: this.loginResponse.data.ID || this.loginResponse.data.UserID,
@@ -135,42 +154,42 @@ export class LoginFormComponent implements OnInit {
   }
 
   checkPasswordStrength(): boolean {
-    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    const policy = this.securityPolicyData;
     if (!policy || !policy.PasswordValidationRequired) return true;
-    
+
     return this.checkNumbers() &&
-           this.checkUppercase() &&
-           this.checkLowercase() &&
-           this.checkSpecialCharacters() &&
-           this.checkMinimumLength();
+      this.checkUppercase() &&
+      this.checkLowercase() &&
+      this.checkSpecialCharacters() &&
+      this.checkMinimumLength();
   }
 
   checkNumbers(): boolean {
-    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    const policy = this.securityPolicyData;
     if (!policy || !policy.Numbers) return true;
     return /\d/.test(this.forcePasswordData.newPassword || '');
   }
 
   checkUppercase(): boolean {
-    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    const policy = this.securityPolicyData;
     if (!policy || !policy.UppercaseCharacters) return true;
     return /[A-Z]/.test(this.forcePasswordData.newPassword || '');
   }
 
   checkLowercase(): boolean {
-    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    const policy = this.securityPolicyData;
     if (!policy || !policy.LowercaseCharacters) return true;
     return /[a-z]/.test(this.forcePasswordData.newPassword || '');
   }
 
   checkSpecialCharacters(): boolean {
-    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    const policy = this.securityPolicyData;
     if (!policy || !policy.SpecialCharacters) return true;
     return /[!@#$%^&*(),.?":{}|<>]/.test(this.forcePasswordData.newPassword || '');
   }
 
   checkMinimumLength(): boolean {
-    const policy = this.securityPolicyData?.data ? this.securityPolicyData.data[0] : null;
+    const policy = this.securityPolicyData;
     if (!policy || !policy.MinimumLength) return true;
     return (this.forcePasswordData.newPassword || '').length >= policy.MinimumLength;
   }
@@ -235,6 +254,7 @@ export class LoginFormComponent implements OnInit {
         this.isSetup2FA = true;
         this.showOTPInputForSetup = false;
         this.tempToken = response.tempToken;
+        this.mfaProvider = response.mfaProvider || 'Google';
         this.sharedService.triggerLoadComponent(false);
         this.fetch2FASetupInfo();
       } else if (response.flag == 11) {
@@ -242,6 +262,7 @@ export class LoginFormComponent implements OnInit {
         this.isSetup2FA = false;
         this.showOTPInputForSetup = false;
         this.tempToken = response.tempToken;
+        this.mfaProvider = response.mfaProvider || 'Google';
         this.sharedService.triggerLoadComponent(false);
       } else if (response.flag == 12) {
         this.tempToken = response.tempToken;
@@ -421,8 +442,15 @@ export class LoginFormComponent implements OnInit {
   }
 
   getSecurityPolicyData() {
-    this.userservice.getUserSecurityPolicityData().subscribe((res: any) => {
-      this.securityPolicyData = res;
+    this.userservice.getUserSecurityPolicityData().subscribe({
+      next: (res: any) => {
+        if (res && res.data && res.data.length > 0) {
+          this.securityPolicyData = res.data[0];
+        } else {
+          this.securityPolicyData = res;
+        }
+      },
+      error: (err) => console.error('Failed to load security policy', err)
     });
   }
 

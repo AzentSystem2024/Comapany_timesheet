@@ -882,7 +882,7 @@ export class MasterReportService {
   }
 
   getUserSecurityPolicityData() {
-    return this.http.post(`${this.BASE_URL}usersecurity/usersecuritylist`, {});
+    return this.http.post(`${this.BASE_URL}securitysettings/list`, {});
   }
   getCountryList() {
     return this.http.post(

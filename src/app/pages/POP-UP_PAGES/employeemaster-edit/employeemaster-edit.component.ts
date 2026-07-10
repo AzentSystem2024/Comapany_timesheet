@@ -245,23 +245,23 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
   generateRandomPassword() {
     let charset = "abcdefghijklmnopqrstuvwxyz";
     let password = "";
-    
+
     if (this.securityPolicy && this.securityPolicy.PasswordValidationRequired) {
       if (this.securityPolicy.UppercaseCharacters) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       if (this.securityPolicy.Numbers) charset += "0123456789";
       if (this.securityPolicy.SpecialCharacters) charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
-      
+
       const length = this.securityPolicy.MinimumLength && this.securityPolicy.MinimumLength > 8 ? this.securityPolicy.MinimumLength : 8;
-      
+
       if (this.securityPolicy.UppercaseCharacters) password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
       if (this.securityPolicy.Numbers) password += "0123456789"[Math.floor(Math.random() * 10)];
       if (this.securityPolicy.SpecialCharacters) password += "!@#$%^&*"[Math.floor(Math.random() * 8)];
       if (this.securityPolicy.LowercaseCharacters) password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
-      
+
       while (password.length < length) {
         password += charset[Math.floor(Math.random() * charset.length)];
       }
-      
+
       // Shuffle password
       password = password.split('').sort(() => 0.5 - Math.random()).join('');
     } else {
@@ -270,7 +270,7 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
         password += charset[Math.floor(Math.random() * charset.length)];
       }
     }
-    
+
     this.newEmployeeData.LoginPassword = password;
     this.passwordMode = 'text';
     this.passwordButtonOptions.icon = 'eyeclose';
@@ -311,7 +311,7 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
     const password = params.value;
     if (!password) return true; // Required validation handles empty case
     if (!this.securityPolicy || !this.securityPolicy.PasswordValidationRequired) return true;
-    
+
     if (this.securityPolicy.MinimumLength && password.length < this.securityPolicy.MinimumLength) {
       params.rule.message = `Password must be at least ${this.securityPolicy.MinimumLength} characters`;
       return false;
@@ -332,14 +332,14 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
       params.rule.message = 'Password must contain at least 1 special character';
       return false;
     }
-    
+
     return true;
   };
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['formdata'] && changes['formdata'].currentValue) {
       this.newEmployeeData = { ...this.formdata };
-      
+
 
       if (this.newEmployeeData.DateOfJoin) {
         this.newEmployeeData.DateOfJoin = new Date(this.newEmployeeData.DateOfJoin);
@@ -347,7 +347,7 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
       if (this.newEmployeeData.DateofRelieving) {
         this.newEmployeeData.DateofRelieving = new Date(this.newEmployeeData.DateofRelieving);
       }
-      
+
       // Parse country codes
       if (this.newEmployeeData.MobileNo) {
         const parts = this.newEmployeeData.MobileNo.split('-');
@@ -421,7 +421,7 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
 
     this.service.update_Employee_Data(dataToSave).subscribe({
       next: (res: any) => {
-        if(res.flag == "1") {
+        if (res.flag == "1") {
           notify(
             { message: 'data updated successfully', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
             'success'
@@ -488,4 +488,4 @@ export class EmployeemasterEditComponent implements OnChanges, OnInit {
   declarations: [EmployeemasterEditComponent],
   exports: [EmployeemasterEditComponent],
 })
-export class EmployeemasterEditModule {}
+export class EmployeemasterEditModule { }

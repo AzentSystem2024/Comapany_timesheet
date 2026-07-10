@@ -53,7 +53,7 @@ export class SecurityPolicyComponent implements OnInit {
   minAllowedLength: number = 6;
   userId: any;
   currentPathName: any;
-  initialized: boolean=false;
+  initialized: boolean = false;
 
   MFAvalidationRequired: boolean = false;
   isGoogleAuthenticator: boolean = false;
@@ -65,7 +65,6 @@ export class SecurityPolicyComponent implements OnInit {
   customEmail: boolean = false;
   customWhatsapp: boolean = false;
   customSingleToken: boolean = true;
-  // customMultipleToken: boolean = false;
 
   tokenOptions = [
     { label: 'Single Token', value: true },
@@ -85,7 +84,7 @@ export class SecurityPolicyComponent implements OnInit {
     private dataService: DataService,
     private dataservice: DataService,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.userId = sessionStorage.getItem('UserID');
@@ -256,7 +255,7 @@ export class SecurityPolicyComponent implements OnInit {
     }
   }
 
-  //========== allow multiple for Google/Microsoft, Custom is exclusive ========
+  //========== Make Google, Microsoft, and Custom mutually exclusive ========
   onCheckboxChanged(authType: string, isChecked: any): void {
     if (!isChecked) {
       // If MFA is required, ensure at least one method remains checked
@@ -272,16 +271,18 @@ export class SecurityPolicyComponent implements OnInit {
       return;
     }
 
-    if (authType === 'custom') {
-      setTimeout(() => {
+    setTimeout(() => {
+      if (authType === 'google') {
+        this.isMicrosoftAuthenticator = false;
+        this.isCustomAuthenticator = false;
+      } else if (authType === 'microsoft') {
+        this.isGoogleAuthenticator = false;
+        this.isCustomAuthenticator = false;
+      } else if (authType === 'custom') {
         this.isGoogleAuthenticator = false;
         this.isMicrosoftAuthenticator = false;
-      });
-    } else {
-      setTimeout(() => {
-        this.isCustomAuthenticator = false;
-      });
-    }
+      }
+    });
 
     if (authType !== 'custom') {
       setTimeout(() => {
@@ -319,4 +320,4 @@ export class SecurityPolicyComponent implements OnInit {
   exports: [],
   declarations: [SecurityPolicyComponent],
 })
-export class SecurityPolicyModule {}
+export class SecurityPolicyModule { }

@@ -81,7 +81,7 @@
   style="max-width: 100%; height: auto !important;">
   <div *ngIf="isSetup2FA" class="text-center mb-2">
     <h5 style="margin-bottom: 4px;">Set up 2FA</h5>
-    <p style="margin-bottom: 4px; font-size: 13px;">Scan this QR code with Google Authenticator:</p>
+    <p style="margin-bottom: 4px; font-size: 13px;">Scan this QR code with {{ mfaProvider }} Authenticator:</p>
     <img *ngIf="qrCodeUrl" [src]="qrCodeUrl" alt="QR Code"
       style="width: 120px; height: 120px; display: block; margin: 0 auto;" />
     <p class="mt-1" style="font-size: 12px; margin-bottom: 2px;">Or configure manually using this key:</p>
@@ -137,70 +137,94 @@
   </div>
 </form>
 
-<dx-popup
-  [width]="400"
-  [height]="'auto'"
-  [showTitle]="true"
-  title="Force Password Change"
-  [dragEnabled]="false"
-  [closeOnOutsideClick]="false"
-  [showCloseButton]="false"
-  [(visible)]="isForcePasswordChangePopupVisible">
+<dx-popup [width]="400" [height]="'auto'" [showTitle]="true" title="Force Password Change" [dragEnabled]="false"
+  [closeOnOutsideClick]="false" [showCloseButton]="false" [(visible)]="isForcePasswordChangePopupVisible">
   <div *dxTemplate="let data of 'content'">
-    <p>Your password was set by an administrator. You must change it before continuing.</p>
+    <p style="margin-bottom: 16px; color: #888; font-size: 13px;">Your password was set by an administrator. You must change it before continuing.</p>
     <form (submit)="onChangePasswordSubmit($event)">
+
+      <!-- Old Password (read-only, prefilled) -->
       <div class="dx-field mb-2">
         <div class="dx-field-label">Old Password</div>
         <div class="dx-field-value">
-          <dx-text-box 
-            mode="password" 
-            [(value)]="forcePasswordData.oldPassword" 
-            [readOnly]="true">
+          <dx-text-box mode="password" [(value)]="forcePasswordData.oldPassword" [readOnly]="true">
           </dx-text-box>
         </div>
       </div>
+
+      <!-- New Password -->
       <div class="dx-field mb-2">
         <div class="dx-field-label">New Password</div>
-        <div class="dx-field-value">
-          <dx-text-box 
-            mode="password" 
-            [(value)]="forcePasswordData.newPassword">
+        <div class="dx-field-value" style="position: relative;">
+          <dx-text-box
+            [mode]="isNewPasswordVisible ? 'text' : 'password'"
+            [(value)]="forcePasswordData.newPassword"
+            valueChangeEvent="input keyup">
           </dx-text-box>
+          <button 
+            type="button"
+            (click)="toggleNewPasswordVisibility()"
+            style="position: absolute; color: var(--base-text-color); right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; z-index: 10;"
+          >
+            <i class="{{ isNewPasswordVisible ? 'dx-icon-eyeopen' : 'dx-icon-eyeclose' }}"></i>
+          </button>
         </div>
       </div>
+
+      <!-- Confirm Password -->
       <div class="dx-field mb-2">
         <div class="dx-field-label">Confirm Password</div>
-        <div class="dx-field-value">
-          <dx-text-box 
-            mode="password" 
-            [(value)]="forcePasswordData.confirmPassword">
+        <div class="dx-field-value" style="position: relative;">
+          <dx-text-box
+            [mode]="isConfirmPasswordVisible ? 'text' : 'password'"
+            [(value)]="forcePasswordData.confirmPassword"
+            valueChangeEvent="input keyup"
+            (onValueChanged)="forcePasswordData.confirmPassword = $event.value">
           </dx-text-box>
+          <button 
+            type="button"
+            (click)="toggleConfirmPasswordVisibility()"
+            style="position: absolute; color: var(--base-text-color); right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; z-index: 10;"
+          >
+            <i class="{{ isConfirmPasswordVisible ? 'dx-icon-eyeopen' : 'dx-icon-eyeclose' }}"></i>
+          </button>
         </div>
       </div>
-      <!-- Password Security Policies -->
-      <ng-container *ngIf="securityPolicyData?.data && securityPolicyData.data[0] as policy">
-        <div *ngIf="policy.PasswordValidationRequired" style="font-size: 13px; margin-bottom: 15px; margin-left: 2px;">
-          <div *ngIf="policy.Numbers" [ngStyle]="{'color': checkNumbers() ? 'green' : 'red', 'margin-bottom': '4px'}">
-            <i class="dx-icon {{checkNumbers() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must contain a number
-          </div>
-          <div *ngIf="policy.UppercaseCharacters" [ngStyle]="{'color': checkUppercase() ? 'green' : 'red', 'margin-bottom': '4px'}">
-            <i class="dx-icon {{checkUppercase() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must contain an uppercase letter
-          </div>
-          <div *ngIf="policy.LowercaseCharacters" [ngStyle]="{'color': checkLowercase() ? 'green' : 'red', 'margin-bottom': '4px'}">
-            <i class="dx-icon {{checkLowercase() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must contain a lowercase letter
-          </div>
-          <div *ngIf="policy.SpecialCharacters" [ngStyle]="{'color': checkSpecialCharacters() ? 'green' : 'red', 'margin-bottom': '4px'}">
-            <i class="dx-icon {{checkSpecialCharacters() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must contain a special character
-          </div>
-          <div *ngIf="policy.MinimumLength > 0" [ngStyle]="{'color': checkMinimumLength() ? 'green' : 'red', 'margin-bottom': '4px'}">
-            <i class="dx-icon {{checkMinimumLength() ? 'dx-icon-check' : 'dx-icon-close'}}"></i> Must be at least {{ policy.MinimumLength }} characters long
-          </div>
+
+      <!-- Live Password Policy Validation -->
+      <div *ngIf="securityPolicyData && securityPolicyData.PasswordValidationRequired" [ngClass]="{'password-policy': true, 'no-border': !securityPolicyData.Numbers}">
+        <!-- Show if Numbers is true -->
+        <div *ngIf="securityPolicyData.Numbers" [ngClass]="{ 'invalid': !checkNumbers(), 'valid': checkNumbers() }">
+          Must contain a number
         </div>
-      </ng-container>
       
+        <!-- Show if UppercaseCharacters is true -->
+        <div *ngIf="securityPolicyData.UppercaseCharacters" [ngClass]="{ 'invalid': !checkUppercase(), 'valid': checkUppercase() }">
+          Must contain an uppercase letter
+        </div>
+      
+        <!-- Show if LowercaseCharacters is true -->
+        <div *ngIf="securityPolicyData.LowercaseCharacters" [ngClass]="{ 'invalid': !checkLowercase(), 'valid': checkLowercase() }">
+          Must contain a lowercase letter
+        </div>
+      
+        <!-- Show if SpecialCharacters is true -->
+        <div *ngIf="securityPolicyData.SpecialCharacters" [ngClass]="{ 'invalid': !checkSpecialCharacters(), 'valid': checkSpecialCharacters() }">
+          Must contain a special character
+        </div>
+      
+        <!-- Show if MinimumLength is defined and greater than 0 -->
+        <div *ngIf="securityPolicyData.MinimumLength > 0" [ngClass]="{ 'invalid': !checkMinimumLength(), 'valid': checkMinimumLength() }">
+          Must be at least {{ securityPolicyData.MinimumLength }} characters long
+        </div>
+      </div>
+
       <div style="display: flex; justify-content: flex-end; margin-top: 20px; gap: 10px;">
         <dx-button text="Cancel" stylingMode="outlined" (onClick)="onForcePasswordPopupClose()"></dx-button>
-        <dx-button text="Submit" type="default" stylingMode="contained" [useSubmitBehavior]="true"></dx-button>
+        <button type="submit"
+          style="background-color: #337ab7; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;">
+          Submit
+        </button>
       </div>
     </form>
   </div>

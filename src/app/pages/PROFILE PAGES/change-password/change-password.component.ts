@@ -7,7 +7,8 @@ import {
   DxValidationGroupComponent,
   DxValidationGroupModule,
   DxValidatorModule,
-  DxSwitchModule
+  DxSwitchModule,
+  DxPopupModule
 } from 'devextreme-angular';
 import { FormPopupModule } from 'src/app/components';
 import { UserService } from 'src/app/services/user.service';
@@ -27,7 +28,14 @@ export class ChangePasswordComponent implements OnInit {
   @ViewChild('validationGroup', { static: true })
   validationGroup: DxValidationGroupComponent;
 
-  securityPolicyData: any;
+  securityPolicyData: any = {
+    Numbers: true,
+    UppercaseCharacters: true,
+    LowercaseCharacters: true,
+    SpecialCharacters: true,
+    MinimumLength: 8,
+    PasswordValidationRequired: true
+  };
   UserID: any;
   oldPassword: any;
   getOldPassword: any;
@@ -40,6 +48,7 @@ export class ChangePasswordComponent implements OnInit {
   showConfirmPassword: boolean = false;
   isPasswordVisible: boolean = false;
   isOldPasswordVisible: boolean = false;
+  isConfirmPasswordVisible: boolean = false;
   isSaving: boolean = false; // Property to track saving state
   isTwoFactorEnabled: boolean = false;
 
@@ -81,18 +90,18 @@ export class ChangePasswordComponent implements OnInit {
     }
 
     // Check if the new password meets the security policy
-    if (!this.checkPasswordStrength()) {
+    const policyError = this.getPasswordPolicyError();
+    if (policyError) {
       this.isSaving = false;
-      // Show error message if the password does not meet the security policy
       notify(
         {
-          message: 'New password does not meet the security requirements.',
+          message: policyError,
           position: { at: 'top right', my: 'top right' },
-          displayTime: 500,
+          displayTime: 4000,
         },
         'error'
       );
-      return; // Stop execution if the password does not meet the policy
+      return;
     }
 
     const reqData = {
@@ -132,7 +141,19 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   closeChangePassword() {
-    this.route.navigateByUrl('/employee-master');
+    // Navigate to the user's first allowed route from their menu
+    try {
+      const menuItems = JSON.parse(localStorage.getItem('sidemenuItems') || '[]');
+      const firstItem = menuItems.find((m: any) => m.path && m.path.trim() !== '');
+      if (firstItem) {
+        const route = firstItem.path.startsWith('/') ? firstItem.path : '/' + firstItem.path;
+        this.route.navigateByUrl(route);
+      } else {
+        this.route.navigateByUrl('/timesheet');
+      }
+    } catch (e) {
+      this.route.navigateByUrl('/timesheet');
+    }
   }
 
   validateField(fieldName: string): boolean {
@@ -170,6 +191,10 @@ export class ChangePasswordComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+  toggleConfirmPasswordVisibility(): void {
+    this.isConfirmPasswordVisible = !this.isConfirmPasswordVisible;
+  }
+
   getUserPassword() {
   }
 
@@ -181,17 +206,9 @@ export class ChangePasswordComponent implements OnInit {
       console.log('user security policy data', this.securityPolicyData);
     });
   }
-  onPasswordInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-
-    // Remove spaces from the current value
-    const sanitizedValue = target.value.replace(/\s/g, '');
-
-    // Update the target value and the newPassword property
-    target.value = sanitizedValue;
-    this.newPassword = sanitizedValue; // Update the password value
-
-    this.checkPasswordStrength(); // Call the function to check the strength of the password
+  onNewPasswordChanged(event: any): void {
+    const cleaned = (event.value || '').replace(/\s/g, '');
+    this.newPassword = cleaned;
   }
 
   onConfirmPasswordKeyDown(event: KeyboardEvent): void {
@@ -250,13 +267,38 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   checkSpecialCharacters(): boolean {
-    return this.securityPolicyData.SpecialCharacters
-      ? /[!@#$%^&*(),.?":{}|<>]/.test(this.newPassword)
-      : true;
+    if (!this.securityPolicyData || !this.securityPolicyData.SpecialCharacters) return true;
+    return /[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;'`~@]/.test(this.newPassword || '');
+  }
+
+  // Returns specific error message for which policy rule the password violates
+  getPasswordPolicyError(): string | null {
+    if (!this.securityPolicyData || !this.securityPolicyData.PasswordValidationRequired) {
+      return null;
+    }
+    const pwd = this.newPassword || '';
+    if (!pwd) return 'Password cannot be empty.';
+    if (this.securityPolicyData.MinimumLength && pwd.length < Number(this.securityPolicyData.MinimumLength)) {
+      return `Password must be at least ${this.securityPolicyData.MinimumLength} characters long.`;
+    }
+    if (this.securityPolicyData.Numbers && !/\d/.test(pwd)) {
+      return 'Password must contain at least 1 number.';
+    }
+    if (this.securityPolicyData.UppercaseCharacters && !/[A-Z]/.test(pwd)) {
+      return 'Password must contain at least 1 uppercase letter.';
+    }
+    if (this.securityPolicyData.LowercaseCharacters && !/[a-z]/.test(pwd)) {
+      return 'Password must contain at least 1 lowercase letter.';
+    }
+    if (this.securityPolicyData.SpecialCharacters && !/[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;'`~@]/.test(pwd)) {
+      return 'Password must contain at least 1 special character.';
+    }
+    return null;
   }
 
   checkMinimumLength(): boolean {
-    return this.newPassword.length >= this.securityPolicyData.MinimumLength;
+    if (!this.securityPolicyData || !this.securityPolicyData.MinimumLength) return true;
+    return (this.newPassword || '').length >= Number(this.securityPolicyData.MinimumLength);
   }
 }
 
@@ -269,7 +311,8 @@ export class ChangePasswordComponent implements OnInit {
     FormPopupModule,
     DxValidatorModule,
     DxValidationGroupModule,
-    DxSwitchModule
+    DxSwitchModule,
+    DxPopupModule
   ],
   providers: [],
   exports: [],
