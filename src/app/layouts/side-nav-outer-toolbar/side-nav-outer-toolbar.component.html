@@ -9,7 +9,7 @@
   </side-navigation-menu>
   <div class="content m-0 p-0">
     <dx-sortable class="custom-tab" filter=".dx-tab" [data]="tabs" itemOrientation="horizontal"
-      dragDirection="horizontal" (onDragStart)="onTabDragStart($event)">
+      dragDirection="horizontal" (onDragStart)="onTabDragStart($event)" (onReorder)="onTabReorder($event)">
       <dx-tab-panel class="tabPanelDiv m-0 p-0" [dataSource]="tabs" noDataText=" " itemTitleTemplate="title"
         itemTemplate="item" [animationEnabled]="true" [deferRendering]="false" [showNavButtons]="true"
         [repaintChangesOnly]="true" [selectedIndex]="selectedIndex">

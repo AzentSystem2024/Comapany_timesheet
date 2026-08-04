@@ -10,6 +10,8 @@ import {
   ChangePasswordFormModule,
   LoginFormModule,
 } from './components';
+import { DxReportDesignerModule } from 'devexpress-reporting-angular';
+import { ReportDesignerComponent } from './report-designer/report-designer.component';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthService, ScreenService, AppInfoService } from './services';
 import { UnauthenticatedContentModule } from './layouts/unauthenticated-content/unauthenticated-content';
@@ -36,12 +38,13 @@ import { CustomReuseStrategy } from './custom-reuse-strategy';
 import { AuthInterceptor } from './services/auth.interceptor';
 import { ConfigService } from './services/config.service';
 import { TimesheetSummaryModule } from './pages/REPORT PAGES/timesheet-summary/timesheet-summary.component';
+import { UserLogModule } from './pages/REPORT PAGES/user-log/user-log.component';
 
 export function initializeApp(configService: ConfigService) {
   return () => configService.load(); 
 }
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, ReportDesignerComponent],
   imports: [
     TaskListModule,
     BrowserModule,
@@ -71,6 +74,8 @@ export function initializeApp(configService: ConfigService) {
     ResetPasswordModule,
     ChangePasswordModule,
     TimesheetSummaryModule,
+    UserLogModule,
+    DxReportDesignerModule,
   ],
   providers: [
     AuthService,

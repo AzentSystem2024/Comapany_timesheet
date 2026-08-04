@@ -51,10 +51,15 @@
   opacity: 1;
 }
 
-/* ===== ACTIVE TAB ICON (always visible) ===== */
-.tabItems.active .close-icon {
-  opacity: 1;
+/* ===== ACTIVE TAB ICON (slightly visible) ===== */
+:host ::ng-deep .dx-tab-selected .close-icon {
+  opacity: 0.5;
   color: #374151; /* darker gray */
+}
+
+/* ===== ACTIVE TAB ICON HOVER (fully visible) ===== */
+:host ::ng-deep .dx-tab-selected:hover .close-icon {
+  opacity: 1;
 }
 
 /* ===== HOVER EFFECT ===== */

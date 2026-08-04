@@ -48,7 +48,7 @@
       <dxi-item location="before">
         <div class="grid-header" style="margin-right: 20px;">Timesheet</div>
       </dxi-item>
-      <dxi-item location="after" *ngIf="isAdmin" template="dateNavigatorTemplate" locateInMenu="never"></dxi-item>
+      <dxi-item location="after" template="dateNavigatorTemplate" locateInMenu="never"></dxi-item>
       <dxi-item
         location="after"
         locateInMenu="auto"
@@ -94,7 +94,7 @@
     <dxi-column caption="Sl No" cellTemplate="serialNoTemplate" [width]="70"></dxi-column>
     <dxi-column dataField="EmployeeName" caption="Employee Name"></dxi-column>
     <dxi-column dataField="TimesheetDate" caption="Timesheet Date" dataType="date" format="dd-MMM-yyyy"></dxi-column>
-    <dxi-column dataField="Hours" caption="Total Hours" dataType="number" format="#,##0.00"></dxi-column>
+    <dxi-column dataField="Hours" caption="Total Hours" dataType="number" format="#,##0.00" alignment="left"></dxi-column>
     <dxi-column dataField="timeOfEntry" caption="Time of Entry" dataType="string" cellTemplate="timeTemplate"></dxi-column>
 
     <div *dxTemplate="let data of 'serialNoTemplate'">
@@ -128,12 +128,13 @@
 
     <div *dxTemplate="let data of 'dateNavigatorTemplate'">
       <div class="date-navigator d-flex align-items-center" style="gap: 10px;">
-        <dx-button icon="chevronleft" stylingMode="text" (onClick)="previousDate()"></dx-button>
+        <dx-button icon="chevronleft" stylingMode="text" [disabled]="isPreviousDateDisabled()" (onClick)="previousDate()"></dx-button>
         <dx-date-box
           [(value)]="selectedDate"
           displayFormat="dd MMM yyyy"
           type="date"
           width="200"
+          [min]="minDate"
           [max]="todayDate"
           [showClearButton]="false"
           [elementAttr]="{ class: 'custom-date-box' }"

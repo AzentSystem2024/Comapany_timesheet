@@ -117,6 +117,10 @@ export class LoginFormComponent implements OnInit {
       this.showNotify("New Password and Confirm Password do not match", "error");
       return;
     }
+    if (this.forcePasswordData.newPassword === this.forcePasswordData.oldPassword) {
+      this.showNotify("New password cannot be the same as the current password.", "error");
+      return;
+    }
 
     if (!this.checkPasswordStrength()) {
       this.showNotify("New password does not meet the security requirements.", "error");
@@ -412,7 +416,7 @@ export class LoginFormComponent implements OnInit {
     const email = logData.emailID || logData.EmailID || logData.emailId || '';
     const empName = logData.employeeName || logData.EmployeeName || '';
 
-    const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+    const isAdmin = logData.isAdmin === true || logData.isAdmin === 1;
 
     if (isAdmin) {
       this.router.navigateByUrl('/employee-master');

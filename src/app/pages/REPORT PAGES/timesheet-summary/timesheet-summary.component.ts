@@ -40,7 +40,7 @@ export class TimesheetSummaryComponent implements OnInit {
     const logData = JSON.parse(localStorage.getItem('logData') || '{}');
     const email = logData.emailID || logData.EmailID || logData.emailId || '';
     const empName = logData.employeeName || logData.EmployeeName || '';
-    const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+    const isAdmin = logData.isAdmin === true || logData.isAdmin === 1;
 
     if (!isAdmin) {
       this.router.navigate(['/timesheet']);

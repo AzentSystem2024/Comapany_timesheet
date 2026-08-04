@@ -91,7 +91,7 @@ export class InactivityService {
             text: 'OK',
             onClick: () => {
               // No second logout API call needed
-              window.location.href = '/auth/login';
+              window.location.href = '/#/auth/login';
             },
           },
         ],

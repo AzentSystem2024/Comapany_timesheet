@@ -77,30 +77,26 @@ export class TimeSheetComponent {
   datasource = new DataSource<any>({
     load: () =>
       new Promise((resolve, reject) => {
-        this.service.get_Timesheet_List().subscribe({
+        const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+        const logUserId = logData.UserID || logData.userId || logData.id || logData.ID || logData.EmployeeID || logData.employeeID || logData.employeeId;
+        const logUserRole = logData.UserRoleName || logData.userRoleName || '';
+        this.isAdmin = (logUserRole === 'Administrator');
+        this.logUserId = logUserId;
+        
+        let reqDate: string | undefined = undefined;
+        let reqEmployeeId: number | undefined = logUserId;
+        let reqIsAdmin: boolean = this.isAdmin;
+        
+        if (this.selectedDate) {
+           const selDate = new Date(this.selectedDate);
+           reqDate = new Date(selDate.getTime() - (selDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+        }
+
+        this.service.get_Timesheet_List(reqDate, reqEmployeeId, reqIsAdmin).subscribe({
           next: (res: any) => {
-            const logData = JSON.parse(localStorage.getItem('logData') || '{}');
             let data = res && res.data ? res.data : res;
             this.allTimesheets = data;
-            
-            const logUserId = logData.UserID || logData.userId || logData.id || logData.ID || logData.EmployeeID || logData.employeeID || logData.employeeId;
-            const logUserRole = logData.UserRoleName || logData.userRoleName || '';
-            this.isAdmin = (logUserRole === 'Administrator');
-            this.logUserId = logUserId;
-            
-            if (!this.isAdmin) {
-              data = data.filter((x: any) => x.employeeID == logUserId || x.EmployeeId == logUserId || x.EmployeeID == logUserId || x.employeeId == logUserId);
-            }
 
-            if (this.isAdmin && this.selectedDate) {
-              const selDate = new Date(this.selectedDate);
-              const selectedDateString = new Date(selDate.getTime() - (selDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-              data = data.filter((x: any) => {
-                const tsDate = x.timesheetDate || x.TimesheetDate;
-                const rowDateString = tsDate ? tsDate.toString().split('T')[0] : '';
-                return rowDateString === selectedDateString;
-              });
-            }
 
             resolve(data);
           },
@@ -110,8 +106,20 @@ export class TimeSheetComponent {
   });
 
   todayDate: Date = new Date();
+  minDate: Date | null = null;
+
+  ngOnInit(): void {
+    const logData = JSON.parse(localStorage.getItem('logData') || '{}');
+    const logUserRole = logData.UserRoleName || logData.userRoleName || '';
+    this.isAdmin = (logUserRole === 'Administrator' || logData.isAdmin === true || logData.isAdmin === 1);
+    if (logData.DateOfJoin && !this.isAdmin) {
+      this.minDate = new Date(logData.DateOfJoin);
+      this.minDate.setHours(0, 0, 0, 0);
+    }
+  }
 
   previousDate() {
+    if (this.isPreviousDateDisabled()) return;
     const newDate = new Date(this.selectedDate);
     newDate.setDate(newDate.getDate() - 1);
     this.selectedDate = newDate;
@@ -123,6 +131,14 @@ export class TimeSheetComponent {
     const selectedDateStr = new Date(selDate.getTime() - (selDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     const todayStr = new Date(this.todayDate.getTime() - (this.todayDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     return selectedDateStr >= todayStr;
+  }
+
+  isPreviousDateDisabled(): boolean {
+    if (!this.minDate) return false;
+    const selDate = new Date(this.selectedDate);
+    const selectedDateStr = new Date(selDate.getTime() - (selDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    const minStr = new Date(this.minDate.getTime() - (this.minDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    return selectedDateStr <= minStr;
   }
 
   nextDate() {
@@ -303,11 +319,22 @@ export class TimeSheetComponent {
       const parts = timeString.split(':');
       if (parts.length >= 2) {
         let hours = parseInt(parts[0], 10);
-        const minutes = parts[1];
+        let minInt = parseInt(parts[1], 10);
+        
+        // Add 5 hours and 30 minutes for IST
+        minInt += 30;
+        hours += 5;
+        if (minInt >= 60) {
+            hours += 1;
+            minInt -= 60;
+        }
+        hours = hours % 24;
+
+        const minutesStr = minInt.toString().padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
         hours = hours ? hours : 12; 
-        return `${hours}:${minutes} ${ampm}`;
+        return `${hours}:${minutesStr} ${ampm}`;
       }
       return timeString;
     } catch(e) {
@@ -359,9 +386,16 @@ export class TimeSheetComponent {
       }
     }
 
+    let adjustedTsDate = data.TimeSheetDate;
+    if (adjustedTsDate instanceof Date) {
+       adjustedTsDate = new Date(adjustedTsDate.getTime() - (adjustedTsDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    } else if (typeof adjustedTsDate === 'string' && adjustedTsDate.includes('T')) {
+       adjustedTsDate = adjustedTsDate.split('T')[0];
+    }
+
     const headerPayload = {
       EmployeeId: finalEmployeeId || 0,
-      TimesheetDate: data.TimeSheetDate,
+      TimesheetDate: adjustedTsDate,
       Hours: totalHoursFormatted
     };
 

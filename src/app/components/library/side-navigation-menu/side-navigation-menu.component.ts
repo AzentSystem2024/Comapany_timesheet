@@ -86,9 +86,9 @@ export class SideNavigationMenuComponent
     let navItems = rawMenu ? JSON.parse(rawMenu) : [];
 
     navItems.forEach((m: any) => {
-      if (m.path === 'speciality') m.path = 'projects';
-      if (m.path === 'clinician-profession') m.path = 'timesheet';
-      if (m.path === 'clinician-category') m.path = 'designation';
+      if (m.path === 'speciality') { m.path = 'projects'; m.text = 'Projects'; }
+      if (m.path === 'clinician-profession') { m.path = 'timesheet'; m.text = 'Timesheet'; }
+      if (m.path === 'clinician-category') { m.path = 'designation'; m.text = 'Designation'; }
 
       if (m.text === 'Reports' || m.text === 'Sidebar Reports' || (m.MenuName && m.MenuName.includes('Report'))) {
         m.path = undefined; // Parent becomes a dropdown container
@@ -131,10 +131,51 @@ export class SideNavigationMenuComponent
       });
     }
 
+    // --- CREATE 'DATAS' PARENT MENU ---
+    let datasMenu = navItems.find((m: any) => m.text === 'DATAS' || m.text === 'Datas');
+    if (!datasMenu) {
+      datasMenu = {
+        id: 'datas-menu',
+        text: 'Operations',
+        path: undefined,
+        GroupID: '0',
+        icon: 'folder'
+      };
+      navItems.push(datasMenu);
+    }
+
+    // Move Timesheet inside DATAS
+    const timesheetMenu = navItems.find((m: any) => m.path === 'timesheet' || m.text === 'Timesheet');
+    if (timesheetMenu) {
+      timesheetMenu.GroupID = datasMenu.id;
+      timesheetMenu.text = 'Timesheet';
+    } else {
+      navItems.push({
+        id: 'timesheet-menu',
+        text: 'Timesheet',
+        path: 'timesheet',
+        GroupID: datasMenu.id,
+        icon: 'clock'
+      });
+    }
+
+    const userLogMenu = navItems.find((m: any) => m.path === 'user-log' || (m.text && m.text.toUpperCase() === 'USER LOG'));
+    if (userLogMenu) {
+      userLogMenu.GroupID = datasMenu.id;
+    } else {
+      navItems.push({
+        id: 'user-log-menu',
+        text: 'User Log',
+        path: 'user-log', // Assuming the path should be 'user-log'
+        GroupID: datasMenu.id
+      });
+    }
+    // ----------------------------------
+
     const logData = JSON.parse(localStorage.getItem('logData') || '{}');
     const email = logData.emailID || logData.EmailID || logData.emailId || '';
     const empName = logData.employeeName || logData.EmployeeName || '';
-    const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+    const isAdmin = logData.isAdmin === true || logData.isAdmin === 1;
 
     if (!isAdmin) {
       navItems = navItems.filter((m: any) =>
@@ -143,6 +184,7 @@ export class SideNavigationMenuComponent
           m.text === 'Sidebar Reports' || 
           (m.MenuName && m.MenuName.includes('Report')) || 
           m.path === 'timesheet-summary' ||
+          m.path === 'report-designer' ||
           m.text === 'System' ||
           (m.MenuName && m.MenuName.includes('System')) ||
           m.path === 'security-policy'
@@ -251,10 +293,14 @@ export class SideNavigationMenuComponent
     const lookup: { [key: string]: any } = {};
     const rootMenus: any[] = [];
 
+    // First pass: initialize lookup
     menuItems.forEach((item) => {
       lookup[item.id] = { ...item, items: [] };
+    });
 
-      if (item.GroupID === '0') {
+    // Second pass: build the tree
+    menuItems.forEach((item) => {
+      if (item.GroupID === '0' || !item.GroupID) {
         rootMenus.push(lookup[item.id]);
       } else {
         if (lookup[item.GroupID]) {

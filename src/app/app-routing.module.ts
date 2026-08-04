@@ -27,6 +27,8 @@ import { EmployeeMasterComponent } from './pages/MASTER PAGES/employee-master/em
 import { DesignationComponent } from './pages/MASTER PAGES/designation/designation.component';
 import { ProjectsComponent } from './pages/MASTER PAGES/projects/projects.component';
 import { TimesheetSummaryComponent } from './pages/REPORT PAGES/timesheet-summary/timesheet-summary.component';
+import { UserLogComponent } from './pages/REPORT PAGES/user-log/user-log.component';
+import { ReportDesignerComponent } from './report-designer/report-designer.component';
 
 const routes: Routes = [
   {
@@ -119,6 +121,11 @@ const routes: Routes = [
         component: ChangePasswordComponent,
       },
       {
+        path: 'user-log',
+        component: UserLogComponent,
+        canActivate: [AuthGuardService],
+      },
+      {
         path: 'speciality',
         redirectTo: 'projects',
         pathMatch: 'full'
@@ -162,6 +169,21 @@ const routes: Routes = [
       {
         path: 'timesheet-summary',
         component: TimesheetSummaryComponent,
+        canActivate: [AuthGuardService],
+      },
+      {
+        path: 'report-designer',
+        component: ReportDesignerComponent,
+        canActivate: [AuthGuardService],
+      },
+      {
+        path: 'report-dashboard',
+        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+        canActivate: [AuthGuardService],
+      },
+      {
+        path: 'report-viewer/:reportName',
+        loadComponent: () => import('./pages/viewer/viewer.component').then(m => m.ViewerComponent),
         canActivate: [AuthGuardService],
       },
       {

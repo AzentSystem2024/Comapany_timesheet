@@ -59,7 +59,7 @@ export class AppHeaderComponent implements OnInit {
             // Clear stored routes again to ensure no leftovers
             this.reuseStrategy.clearStoredData();
             // Navigate to the login page directly for a smooth refresh
-            window.location.href = '/auth/login';
+            window.location.href = '/#/auth/login';
           }
         });
       },
@@ -89,15 +89,15 @@ export class AppHeaderComponent implements OnInit {
           ? storedUserPhoto
           : `https://ui-avatars.com/api/?name=${this.user.name || 'User'}&background=F44336&color=fff&rounded=true`;
 
-        // Check if admin and remove Change Password
+        // Check if admin and remove Change Password (REMOVED - Admin can now change password)
         const logData = JSON.parse(localStorage.getItem('logData') || '{}');
         const email = logData.emailID || logData.EmailID || logData.emailId || '';
         const empName = logData.employeeName || logData.EmployeeName || this.user.name || '';
-        const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+        const isAdmin = logData.isAdmin === true || logData.isAdmin === 1;
 
-        if (isAdmin) {
-          this.userMenuItems = this.userMenuItems.filter(item => item.text !== 'Change Password');
-        }
+        // if (isAdmin) {
+        //   this.userMenuItems = this.userMenuItems.filter(item => item.text !== 'Change Password');
+        // }
       }
     });
 

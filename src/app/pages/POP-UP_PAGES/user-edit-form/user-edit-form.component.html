@@ -28,7 +28,7 @@
               [(value)]="newUserData.UserName"
               label="User Name"
               hint="User Name"
-              [readOnly]="newUserData.UserName==='bimal'"
+              [readOnly]="newUserData.isAdmin === true || newUserData.isAdmin === 1"
             >
               <dx-validator>
                 <dxi-validation-rule

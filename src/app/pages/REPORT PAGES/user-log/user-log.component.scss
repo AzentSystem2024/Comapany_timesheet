@@ -1,0 +1,21 @@
+@use "../../../../variables.scss" as *;
+@use "sass:math";
+.grid-header {
+    @include header();
+  }
+
+::ng-deep .custom-date-box .dx-texteditor-input {
+  font-weight: bold;
+  color: #1a1a1a !important;
+  font-size: 15px; 
+  text-align: center; 
+}
+
+::ng-deep .date-nav-btn.dx-state-disabled {
+  cursor: not-allowed !important;
+}
+
+::ng-deep .dx-datagrid-rowsview .dx-row > td {
+  font-weight: 500 !important;
+  font-size: 15px !important;
+}

@@ -12,6 +12,10 @@ export class SystemServicesService {
     private config: ConfigService,
   ) {}
 
+  getCountryWithFlags() {
+    return this.http.post<any[]>(`${this.BASE_URL}country/list`, {});
+  }
+
   private get BASE_URL(): string {
     return this.config.apiBaseUrl;
   }

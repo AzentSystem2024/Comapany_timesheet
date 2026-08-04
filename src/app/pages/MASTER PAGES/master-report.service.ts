@@ -36,6 +36,12 @@ export class MasterReportService {
     const reqBody = { name: dropDownField };
     return this.http.post(Url, reqBody);
   }
+
+  getDeviceLogs(employeeId: number, logDate: string) {
+    const Url = `${this.BASE_URL}Employee/GetDeviceLogs?employeeId=${employeeId}&logDate=${encodeURIComponent(logDate)}`;
+    return this.http.get(Url);
+  }
+
   //==========================================USER LEVEL MASTER======================================================
   //============List of User Level==============
   get_userLevel_List() {
@@ -1525,9 +1531,9 @@ export class MasterReportService {
   }
 
   //==========================================TIMESHEET==========================================================
-  get_Timesheet_List() {
+  get_Timesheet_List(date?: string | Date, employeeId?: number, isAdmin?: boolean) {
     const Url = `${this.BASE_URL}timesheetheader/list`;
-    const reqBody = { list: [] };
+    const reqBody = { date: date || null, employeeId: employeeId || null, isAdmin: isAdmin || false };
     return this.http.post(Url, reqBody);
   }
 

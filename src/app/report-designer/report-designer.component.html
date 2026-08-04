@@ -1,0 +1,10 @@
+<div style="height: calc(100vh - 60px); width: 100%;">
+  <dx-report-designer [reportUrl]="reportUrl" height="100%">
+    <dxrd-request-options 
+      [getDesignerModelAction]="getDesignerModelAction" 
+      [host]="hostUrl"
+      invokeAction="/api/CustomReportDesigner/Invoke">
+    </dxrd-request-options>
+    <dxrd-callbacks (ReportSaved)="onReportSaved($event)"></dxrd-callbacks>
+  </dx-report-designer>
+</div>

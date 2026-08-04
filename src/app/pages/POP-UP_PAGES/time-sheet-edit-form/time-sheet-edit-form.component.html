@@ -1,78 +1,97 @@
 <div class="dx-theme-fluent dx-theme-fluent">
+
   <dx-validation-group #validationGroup>
     <div class="table-container mt-4 mx-3">
-      <dx-data-grid
-        [height]="'60vh'"
-        id="gridContainer"
-        [dataSource]="timesheetEntries"
-        [showBorders]="true"
-        (onKeyDown)="onKeyDown($event)"
-      >
-        <dxo-toolbar>
-          <dxi-item location="before" template="headerTemplate"></dxi-item>
-          <dxi-item name="addRowButton"></dxi-item>
-        </dxo-toolbar>
-        <dxo-editing
-          mode="cell"
-          [allowUpdating]="!isReadOnly"
-          [allowAdding]="!isReadOnly"
-          [allowDeleting]="!isReadOnly"
-          newRowPosition="last"
-        ></dxo-editing>
 
-        <dxi-column dataField="ProjectID" caption="Project">
-          <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
-          <dxo-lookup [dataSource]="projectList" displayExpr="ProjectName" valueExpr="Id"></dxo-lookup>
-        </dxi-column>
-        <dxi-column dataField="ActivityID" caption="Activity">
-          <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
-          <dxo-lookup [dataSource]="activityList" displayExpr="ActivityName" valueExpr="ID"></dxo-lookup>
-        </dxi-column>
-        <dxi-column dataField="Module">
-          <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
-        </dxi-column>
-        <dxi-column dataField="Remarks">
-          <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
-        </dxi-column>
-        <dxi-column dataField="Hour" dataType="number" [editorOptions]="{ min: 0, max: 24 }">
-          <dxi-validation-rule type="range" [min]="0" [max]="24"></dxi-validation-rule>
-        </dxi-column>
-        <dxi-column dataField="Minutes" dataType="number" [editorOptions]="{ min: 0, max: 59 }">
-          <dxi-validation-rule type="range" [min]="0" [max]="59"></dxi-validation-rule>
-        </dxi-column>
+      <!-- Side-by-side layout -->
+      <div class="d-flex" style="gap: 20px;">
 
-        <dxo-summary [calculateCustomSummary]="calculateTotalTime">
-          <dxi-total-item name="totalTime" summaryType="custom" displayFormat="Total: {0}" showInColumn="Hour"></dxi-total-item>
-        </dxo-summary>
+        <!-- Main Timesheet Grid -->
+        <div [style.flex]="isReadOnly ? '7' : 'none'" [style.width]="isReadOnly ? 'auto' : '100%'">
+          <dx-data-grid [height]="350" id="gridContainer" [dataSource]="timesheetEntries" [showBorders]="true"
+            (onKeyDown)="onKeyDown($event)">
+            <dxo-toolbar>
+              <dxi-item location="before" template="headerTemplate"></dxi-item>
+              <dxi-item name="addRowButton"></dxi-item>
+            </dxo-toolbar>
+            <dxo-editing mode="cell" [allowUpdating]="!isReadOnly" [allowAdding]="!isReadOnly"
+              [allowDeleting]="!isReadOnly" newRowPosition="last"></dxo-editing>
 
-        <div *dxTemplate="let data of 'headerTemplate'">
-          <div class="employee-header" style="width: 100%;">
-          </div>
-          <div class="d-flex" style="gap: 20px; align-items: center;">
-            <div style="width: 200px;">
-              <dx-date-box
-                [(value)]="newUserData.TimeSheetDate"
-                label="Date"
-                labelMode="floating"
-                [readOnly]="true"
-              ></dx-date-box>
+            <dxi-column dataField="ProjectID" caption="Project">
+              <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
+              <dxo-lookup [dataSource]="projectList" displayExpr="ProjectName" valueExpr="Id"></dxo-lookup>
+            </dxi-column>
+            <dxi-column dataField="ActivityID" caption="Activity">
+              <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
+              <dxo-lookup [dataSource]="activityList" displayExpr="ActivityName" valueExpr="ID"></dxo-lookup>
+            </dxi-column>
+            <dxi-column dataField="Module">
+              <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
+            </dxi-column>
+            <dxi-column dataField="Remarks">
+              <dxi-validation-rule type="required" message="Required"></dxi-validation-rule>
+            </dxi-column>
+            <dxi-column dataField="Hour" dataType="number" [editorOptions]="{ min: 0, max: 24 }">
+              <dxi-validation-rule type="range" [min]="0" [max]="24"></dxi-validation-rule>
+            </dxi-column>
+            <dxi-column dataField="Minutes" dataType="number" [editorOptions]="{ min: 0, max: 59 }">
+              <dxi-validation-rule type="range" [min]="0" [max]="59"></dxi-validation-rule>
+            </dxi-column>
+
+            <dxo-summary [calculateCustomSummary]="calculateTotalTime">
+              <dxi-total-item name="totalTime" summaryType="custom" displayFormat="Total: {0}"
+                showInColumn="Hour"></dxi-total-item>
+            </dxo-summary>
+
+            <div *dxTemplate="let data of 'headerTemplate'">
+              <div class="d-flex" style="gap: 20px; align-items: center;">
+                <div style="width: 200px;">
+                  <dx-date-box [(value)]="newUserData.TimeSheetDate" label="Date" labelMode="floating"
+                    [readOnly]="true"></dx-date-box>
+                </div>
+                <div style="width: 300px;">
+                  <dx-text-box [(value)]="loggedUserName" label="Employee Name" labelMode="floating"
+                    [readOnly]="true"></dx-text-box>
+                </div>
+              </div>
             </div>
-            <div style="width: 300px;">
-              <dx-text-box
-                [(value)]="loggedUserName"
-                label="Employee Name"
-                labelMode="floating"
-                [readOnly]="true"
-              ></dx-text-box>
-            </div>
-          </div>
+          </dx-data-grid>
         </div>
-      </dx-data-grid>
+
+        <!-- Login Times Grid (Only shown in ReadOnly/Admin view) -->
+        <div *ngIf="isReadOnly" style="flex: 2; display: flex; flex-direction: column;">
+          <!-- Login/Logout Summary -->
+          <div class="p-2"
+            style="height: 65px; background-color: #f8f9fa; border: 1px solid #e0e0e0; border-bottom: none; border-radius: 4px 4px 0 0;">
+            <div class="d-flex justify-content-between mb-1">
+              <span style="font-weight: 600; font-size: 13px; color: #555;">Check In:</span>
+              <span style="font-size: 13px; color: #333;">{{ dummyLoginTimes.length > 0 ? dummyLoginTimes[0].loginTime :
+                '--:--' }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span style="font-weight: 600; font-size: 13px; color: #555;">Check Out:</span>
+              <span style="font-size: 13px; color: #333;">{{ dummyLoginTimes.length > 0 ?
+                dummyLoginTimes[dummyLoginTimes.length - 1].loginTime : '--:--' }}</span>
+            </div>
+          </div>
+
+          <dx-data-grid [height]="285" [dataSource]="dummyLoginTimes" [showBorders]="true" style="border-radius: 0 0 4px 4px;">
+            <dxi-column caption="S.No" cellTemplate="rowIndexTemplate" [width]="50"></dxi-column>
+            <dxi-column dataField="loginTime" caption="Log In Times"></dxi-column>
+            <div *dxTemplate="let data of 'rowIndexTemplate'">
+              {{ data.rowIndex + 1 }}
+            </div>
+          </dx-data-grid>
+        </div>
+
+      </div>
     </div>
 
-    <div class="form-popup-buttons-container" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+    <div class="form-popup-buttons-container"
+      style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
       <dx-button text="Cancel" stylingMode="outlined" type="normal" (onClick)="exitForm()"></dx-button>
-      <dx-button *ngIf="!isReadOnly" text="Save" stylingMode="contained" type="default" (onClick)="saveEntries()"></dx-button>
+      <dx-button *ngIf="!isReadOnly" text="Save" stylingMode="contained" type="default"
+        (onClick)="saveEntries()"></dx-button>
     </div>
 
   </dx-validation-group>

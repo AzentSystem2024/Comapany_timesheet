@@ -1,0 +1,31 @@
+@import "@devexpress/analytics-core/dist/css/dx-analytics.common.css";
+@import "@devexpress/analytics-core/dist/css/dx-analytics.light.css";
+@import "devexpress-reporting/dist/css/dx-webdocumentviewer.css";
+@import "devexpress-reporting/dist/css/dx-reportdesigner.css";
+
+/* --- AGGRESSIVE HACK TO FIX FLUENT THEME OVERLAP --- */
+::ng-deep .dx-reportdesigner {
+    /* Push down the scrollable properties area because the Fluent header is taller */
+    .dxrd-right-panel .dx-scrollable, 
+    .dxrd-right-tabs .dx-scrollable,
+    .dxrd-property-grid-wrapper .dx-scrollable {
+        margin-top: 25px !important;
+    }
+    
+    /* Allow headers to expand */
+    .dxrd-property-grid-header,
+    .dxrd-right-panel-header {
+        height: auto !important;
+        min-height: max-content !important;
+        padding-bottom: 10px !important;
+    }
+
+    /* Extra spacing for form fields */
+    .dx-field-item {
+        margin-bottom: 15px !important;
+    }
+    .dx-field-item-label {
+        margin-top: 5px !important;
+        margin-bottom: 5px !important;
+    }
+}

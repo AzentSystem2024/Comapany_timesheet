@@ -72,7 +72,12 @@ export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked {
     this.isAdmin = (logUserRole === 'Administrator');
     this.logUserId = logData.UserID || logData.userId || logData.id || logData.ID || logData.EmployeeID || logData.employeeID || logData.employeeId;
     
-    this.newUserData.TimeSheetDate = this.selectedDate;
+    if (this.isAdmin) {
+        this.newUserData.TimeSheetDate = this.selectedDate;
+    } else {
+        this.newUserData.TimeSheetDate = new Date(); // Always force today's date for standard users
+    }
+    
     this.newUserData.EmployeeId = this.isAdmin ? null : this.logUserId;
 
     // Initialize with one blank row

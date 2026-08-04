@@ -84,7 +84,7 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
     const logData = JSON.parse(localStorage.getItem('logData') || '{}');
     const email = logData.emailID || logData.EmailID || logData.emailId || '';
     const empName = logData.employeeName || logData.EmployeeName || '';
-    const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+    const isAdmin = logData.isAdmin === true || logData.isAdmin === 1;
 
     let path = isAdmin ? 'employee-master' : 'timesheet';
     let title = isAdmin ? 'Employee Master' : 'Timesheet';
@@ -189,6 +189,23 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
     e.itemData = e.fromData[e.fromIndex];
   }
 
+  onTabReorder(e: any) {
+    const fromIndex = e.fromIndex;
+    const toIndex = e.toIndex;
+
+    const item = this.tabs.splice(fromIndex, 1)[0];
+    this.tabs.splice(toIndex, 0, item);
+
+    // Update selectedIndex if it was affected
+    if (this.selectedIndex === fromIndex) {
+      this.selectedIndex = toIndex;
+    } else if (this.selectedIndex > fromIndex && this.selectedIndex <= toIndex) {
+      this.selectedIndex--;
+    } else if (this.selectedIndex < fromIndex && this.selectedIndex >= toIndex) {
+      this.selectedIndex++;
+    }
+  }
+
   showCloseButton() {
     return true;
   }
@@ -197,7 +214,7 @@ export class SideNavOuterToolbarComponent implements OnInit, OnDestroy {
     const logData = JSON.parse(localStorage.getItem('logData') || '{}');
     const email = logData.emailID || logData.EmailID || logData.emailId || '';
     const empName = logData.employeeName || logData.EmployeeName || '';
-    const isAdmin = email === 'bimal@renazentit.com' || empName.toLowerCase() === 'bimal';
+    const isAdmin = logData.isAdmin === true || logData.isAdmin === 1;
     const homePath = isAdmin ? 'employee-master' : 'timesheet';
 
     if (tab.path === homePath) {

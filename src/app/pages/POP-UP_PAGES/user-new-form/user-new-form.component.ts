@@ -17,7 +17,8 @@ import {
   OnInit,
   SimpleChanges,
   ViewChild,
-} from '@angular/core';
+} from '@angular/core'; 
+import { SystemServicesService } from '../../SYSTEM PAGES/system-services.service';
 import {
   DxTabPanelModule,
   DxCheckBoxModule,
@@ -150,6 +151,7 @@ export class UserNewFormComponent implements OnInit, AfterViewChecked {
   exampleTimeFormat: any;
 
   constructor(
+    private systemServicesService: SystemServicesService, 
     private service: MasterReportService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -533,6 +535,9 @@ export class UserNewFormComponent implements OnInit, AfterViewChecked {
   }
 
   ngOnInit(): void {
+    this.systemServicesService.getCountryWithFlags().subscribe((res: any) => {
+      this.countryCodes = res;
+    });
     this.getDropDownData('GENDER_DATA');
     this.getDropDownData('USER_ROLE');
     this.getDropDownData('DATE_FORMAT');

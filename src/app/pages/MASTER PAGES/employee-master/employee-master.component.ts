@@ -47,7 +47,7 @@ export class EmployeeMasterComponent {
   @ViewChild(NewEmployeemasterComponent, { static: false })
   newEmployeeForm!: NewEmployeemasterComponent;
 
-  popupwidth: any = '65%';
+  popupwidth: any = '85%';
 
   isAddFormPopupOpened: boolean = false;
   isEditPopupOpened: boolean = false;
@@ -126,6 +126,10 @@ export class EmployeeMasterComponent {
   }
 
   onClickSaveNewData() {
+    if (this.newEmployeeForm && !this.newEmployeeForm.validateForm()) {
+      return;
+    }
+
     const data = this.newEmployeeForm.getNewEmployeeData();
     console.log(data, 'PAYLOAD IN SAVE');
     
@@ -137,7 +141,7 @@ export class EmployeeMasterComponent {
             'success'
           );
           this.isAddFormPopupOpened = false;
-          this.dataGrid.instance.refresh();
+          this.datasource.reload();
         } else {
           notify(
             { message: res.message || 'Failed to save data', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
@@ -170,7 +174,7 @@ export class EmployeeMasterComponent {
             { message: 'Delete operation successful', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
             'success'
           );
-          this.dataGrid.instance.refresh();
+          this.datasource.reload();
         } else {
           notify(
             { message: res.message || 'Failed to delete', position: { at: 'top right', my: 'top right' }, displayTime: 500 },
@@ -187,7 +191,7 @@ export class EmployeeMasterComponent {
     });
   }
   refresh = () => {
-    this.dataGrid.instance.refresh();
+    this.datasource.reload();
   };
   onExporting(event: any) {
     const fileName = 'employee-master';
@@ -196,7 +200,7 @@ export class EmployeeMasterComponent {
 
   CloseEditForm() {
     this.isEditPopupOpened = false;
-    this.dataGrid.instance.refresh();
+    this.datasource.reload();
   }
 
   reset2FAClick = (e: any) => {

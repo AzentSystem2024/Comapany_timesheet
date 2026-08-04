@@ -1,3 +1,4 @@
+<dx-validation-group #addValidationGroup>
 <div class="tabs-demo view-wrapper">
   <div class="widget-container">
     <div class="employee-header">
@@ -5,217 +6,98 @@
     </div>
 
     <div class="employee-details">
-      <div class="form-column">
-        <dx-text-box
-          [(value)]="newEmployeeData.EmployeeName"
-          label="Employee Name"
-          hint="Employee Name"
-          (input)="onEmployeeNameInput($event)"
-        >
-          <dx-validator>
-            <dxi-validation-rule
-              type="required"
-              message="Employee Name is required"
-            ></dxi-validation-rule>
-          </dx-validator>
-        </dx-text-box>
+      <!-- Row 1 -->
+      <dx-text-box [(value)]="newEmployeeData.EmployeeNo" label="Employee Number" hint="Employee Number">
+        <dx-validator><dxi-validation-rule type="required" message="Employee Number is required"></dxi-validation-rule></dx-validator>
+      </dx-text-box>
+      <dx-number-box [(value)]="newEmployeeData.EnrollmentNo" label="Enrollment No" hint="Enrollment No"></dx-number-box>
+      <dx-text-box [(value)]="newEmployeeData.EmployeeName" label="Employee Name" hint="Employee Name">
+        <dx-validator><dxi-validation-rule type="required" message="Employee Name is required"></dxi-validation-rule></dx-validator>
+      </dx-text-box>
+      <dx-select-box [(value)]="newEmployeeData.DesignationID" [items]="designationOptions" valueExpr="ID" displayExpr="Designation" label="Designation" placeholder="Select Designation" hint="Designation">
+        <dx-validator><dxi-validation-rule type="required" message="Designation is required"></dxi-validation-rule></dx-validator>
+      </dx-select-box>
 
-        <dx-text-area
-          [(value)]="newEmployeeData.Address1"
-          label="Address"
-          hint="Address"
-          [height]="170"
-        >
-          <dx-validator>
-            <dxi-validation-rule
-              type="required"
-              message="Address is required"
-            ></dxi-validation-rule>
-          </dx-validator>
-        </dx-text-area>
+      <!-- Row 2 -->
+      <dx-date-box [(value)]="newEmployeeData.DateOfJoin" label="Date of Join" type="date" [displayFormat]="'dd/MM/yyyy'" placeholder="Select Date of Join" stylingMode="outlined" hint="Date of Join">
+        <dx-validator><dxi-validation-rule type="required" message="Date of Join is required"></dxi-validation-rule></dx-validator>
+      </dx-date-box>
+      <dx-select-box [(value)]="newEmployeeData.Sex" [items]="[{ id: 1, text: 'Male' }, { id: 2, text: 'Female' }, { id: 3, text: 'Others' }]" valueExpr="id" displayExpr="text" label="Sex" placeholder="Select Sex" hint="Sex">
+        <dx-validator><dxi-validation-rule type="required" message="Sex is required"></dxi-validation-rule></dx-validator>
+      </dx-select-box>
+      <div style="display: flex; gap: 5px; width: 100%;">
+        <dx-select-box [(value)]="newEmployeeData.MobileCountryCode" [items]="countryCodes" valueExpr="code" displayExpr="text" width="90px" placeholder="Code" label="Code" [searchEnabled]="true" fieldTemplate="fieldTemplate" itemTemplate="itemTemplate">
+          <div *dxTemplate="let data of 'fieldTemplate'" style="display: flex; align-items: center; padding-left: 5px; height: 100%;">
+            <img *ngIf="data" [src]="data.flagUrl" style="width: 20px; margin-right: 4px;" />
+            <input class="dx-texteditor-input" type="text" [value]="data ? data.text : ''" readonly style="flex: 1; border: none; background: transparent; outline: none; padding: 0;" />
+          </div>
+          <div *dxTemplate="let data of 'itemTemplate'" style="display: flex; align-items: center;">
+            <img [src]="data.flagUrl" style="width: 20px; margin-right: 8px;" />
+            <span>{{ data.text }}</span>
+          </div>
+        </dx-select-box>
+        <dx-text-box style="flex: 1" [(value)]="newEmployeeData.MobileNo" placeholder="Mobile No." label="Mobile No." hint="Mobile No." [maxLength]="10" (input)="onPhoneInput($event, 'MobileNo')">
+          <dx-validator><dxi-validation-rule type="required" message="Mobile No is required"></dxi-validation-rule><dxi-validation-rule type="stringLength" [max]="10" message="Mobile No must not exceed 10 digits"></dxi-validation-rule></dx-validator>
+        </dx-text-box>
+      </div>
+      <div style="display: flex; gap: 5px; width: 100%;">
+        <dx-select-box [(value)]="newEmployeeData.WhatsappCountryCode" [items]="countryCodes" valueExpr="code" displayExpr="text" width="90px" placeholder="Code" label="Code" [searchEnabled]="true" fieldTemplate="fieldTemplate" itemTemplate="itemTemplate">
+          <div *dxTemplate="let data of 'fieldTemplate'" style="display: flex; align-items: center; padding-left: 5px; height: 100%;">
+            <img *ngIf="data" [src]="data.flagUrl" style="width: 20px; margin-right: 4px;" />
+            <input class="dx-texteditor-input" type="text" [value]="data ? data.text : ''" readonly style="flex: 1; border: none; background: transparent; outline: none; padding: 0;" />
+          </div>
+          <div *dxTemplate="let data of 'itemTemplate'" style="display: flex; align-items: center;">
+            <img [src]="data.flagUrl" style="width: 20px; margin-right: 8px;" />
+            <span>{{ data.text }}</span>
+          </div>
+        </dx-select-box>
+        <dx-text-box style="flex: 1" [(value)]="newEmployeeData.WhatsappNo" placeholder="Whatsapp" label="Whatsapp" hint="Whatsapp" [maxLength]="10" (input)="onPhoneInput($event, 'WhatsappNo')">
+          <dx-validator><dxi-validation-rule type="required" message="Whatsapp No is required"></dxi-validation-rule><dxi-validation-rule type="stringLength" [max]="10" message="Whatsapp No must not exceed 10 digits"></dxi-validation-rule></dx-validator>
+        </dx-text-box>
       </div>
 
-      <div class="form-column">
-        <div style="display: flex; gap: 5px; width: 100%;">
-          <dx-select-box
-            [(value)]="newEmployeeData.MobileCountryCode"
-            [items]="countryCodes"
-            valueExpr="code"
-            displayExpr="text"
-            width="120px"
-            placeholder="Code"
-            label="Code"
-            [searchEnabled]="true"
-          ></dx-select-box>
-          <dx-text-box
-            style="flex: 1"
-            [(value)]="newEmployeeData.MobileNo"
-            placeholder="Mobile No."
-            label="Mobile No."
-            hint="Mobile No."
-            [maxLength]="10"
-            (input)="onPhoneInput($event, 'MobileNo')"
-          >
-            <dx-validator>
-              <dxi-validation-rule type="required" message="Mobile No is required"></dxi-validation-rule>
-              <dxi-validation-rule type="stringLength" [max]="10" message="Mobile No must not exceed 10 digits"></dxi-validation-rule>
-            </dx-validator>
-          </dx-text-box>
+      <!-- Row 3 -->
+      <dx-text-box [(value)]="newEmployeeData.EmailID" label="Email" hint="Email">
+        <dx-validator>
+          <dxi-validation-rule type="required" message="Email is required"></dxi-validation-rule>
+          <dxi-validation-rule type="email" message="Enter a valid Email"></dxi-validation-rule>
+          <dxi-validation-rule type="pattern" [pattern]="emailPattern" message="Email must contain @ and end with .com"></dxi-validation-rule>
+          <dxi-validation-rule type="async" message="Email already exists" [validationCallback]="checkEmail"></dxi-validation-rule>
+        </dx-validator>
+      </dx-text-box>
+      <dx-select-box [(value)]="newEmployeeData.IsWorking" [items]="[{ id: true, text: 'Working' }, { id: false, text: 'Not Working' }]" valueExpr="id" displayExpr="text" label="Status" placeholder="Select Status" hint="Status">
+        <dx-validator><dxi-validation-rule type="required" message="Status is required"></dxi-validation-rule></dx-validator>
+      </dx-select-box>
+      <dx-text-box [(value)]="newEmployeeData.LoginName" label="Login Name" hint="Login Name">
+        <dx-validator><dxi-validation-rule type="required" message="Login Name is required"></dxi-validation-rule></dx-validator>
+      </dx-text-box>
+      <dx-text-box #passwordTextBox [(value)]="newEmployeeData.LoginPassword" label="Password" hint="Password" [mode]="passwordMode" (onKeyDown)="preventTyping($event)" (onPaste)="preventTyping($event)" (onCut)="preventTyping($event)">
+        <dxi-button name="generatePassword" location="after" [options]="generatePasswordButtonOptions"></dxi-button>
+        <dxi-button name="password" location="after" [options]="passwordButtonOptions"></dxi-button>
+        <dx-validator>
+          <dxi-validation-rule type="required" message="Password is required"></dxi-validation-rule>
+          <dxi-validation-rule type="custom" message="Password does not meet the security policy requirements" [validationCallback]="validatePassword"></dxi-validation-rule>
+        </dx-validator>
+      </dx-text-box>
+
+      <!-- Row 4 -->
+      <dx-text-area class="form-item-double" [(value)]="newEmployeeData.Address1" label="Address" hint="Address" [height]="60">
+        <dx-validator><dxi-validation-rule type="required" message="Address is required"></dxi-validation-rule></dx-validator>
+      </dx-text-area>
+      <dx-text-area class="form-item-double" [(value)]="newEmployeeData.Remarks" label="Remarks" hint="Remarks" [height]="60"></dx-text-area>
+
+      <!-- Row 5 -->
+      <div class="form-item-double">
+        <label style="font-size: 12px; color: rgba(0,0,0,0.54);">Role</label>
+        <div style="display: flex; gap: 20px; align-items: center; margin-top: 5px;">
+          <dx-check-box text="Employee" [value]="newEmployeeData.isAdmin === false" (onValueChanged)="onRoleChanged(false, $event)"></dx-check-box>
+          <dx-check-box text="Admin" [value]="newEmployeeData.isAdmin === true" (onValueChanged)="onRoleChanged(true, $event)"></dx-check-box>
         </div>
-
-        <dx-text-box
-          [(value)]="newEmployeeData.LoginPassword"
-          label="Login Password"
-          hint="Login Password"
-          [mode]="passwordMode"
-        >
-          <dxi-button
-            name="password"
-            location="after"
-            [options]="passwordButtonOptions"
-          ></dxi-button>
-          <dx-validator>
-            <dxi-validation-rule
-              type="required"
-              message="Password is required"
-            ></dxi-validation-rule>
-            <dxi-validation-rule
-              type="custom"
-              message="Password does not meet the security policy requirements"
-              [validationCallback]="validatePassword"
-            ></dxi-validation-rule>
-          </dx-validator>
-        </dx-text-box>
-
-        <div style="display: flex; gap: 5px; width: 100%; margin-bottom: 12px;">
-          <dx-select-box
-            [(value)]="newEmployeeData.WhatsappCountryCode"
-            [items]="countryCodes"
-            valueExpr="code"
-            displayExpr="text"
-            width="120px"
-            placeholder="Code"
-            label="Code"
-            [searchEnabled]="true"
-          ></dx-select-box>
-          <dx-text-box
-            style="flex: 1"
-            [(value)]="newEmployeeData.WhatsappNo"
-            placeholder="Whatsapp"
-            label="Whatsapp"
-            hint="Whatsapp"
-            [maxLength]="10"
-            (input)="onPhoneInput($event, 'WhatsappNo')"
-          >
-            <dx-validator>
-              <dxi-validation-rule type="required" message="Whatsapp No is required"></dxi-validation-rule>
-              <dxi-validation-rule type="stringLength" [max]="10" message="Whatsapp No must not exceed 10 digits"></dxi-validation-rule>
-            </dx-validator>
-          </dx-text-box>
-        </div>
-
-        <dx-text-box
-          [(value)]="newEmployeeData.EmailID"
-          label="Email"
-          hint="Email"
-        >
-          <dx-validator>
-            <dxi-validation-rule
-              type="required"
-              message="Email is required"
-            ></dxi-validation-rule>
-            <dxi-validation-rule
-              type="email"
-              message="Enter a valid Email"
-            ></dxi-validation-rule>
-            <dxi-validation-rule
-              type="pattern"
-              [pattern]="emailPattern"
-              message="Email must contain @ and end with .com"
-            ></dxi-validation-rule>
-            <dxi-validation-rule
-              type="async"
-              message="Email already exists"
-              [validationCallback]="checkEmail"
-            ></dxi-validation-rule>
-          </dx-validator>
-        </dx-text-box>
       </div>
-
-      <div class="form-column">
-        <dx-select-box
-          [(value)]="newEmployeeData.DesignationID"
-          [items]="designationOptions"
-          valueExpr="ID"
-          displayExpr="Designation"
-          label="Designation"
-          placeholder="Select Designation"
-          hint="Designation"
-        >
-          <dx-validator>
-            <dxi-validation-rule type="required" message="Designation is required"></dxi-validation-rule>
-          </dx-validator>
-        </dx-select-box>
-
-        <dx-select-box
-          [(value)]="newEmployeeData.Sex"
-          [items]="[
-            { id: 1, text: 'Male' },
-            { id: 2, text: 'Female' },
-            { id: 3, text: 'Others' }
-          ]"
-          valueExpr="id"
-          displayExpr="text"
-          label="Sex"
-          placeholder="Select Sex"
-          hint="Sex"
-        >
-          <dx-validator>
-            <dxi-validation-rule type="required" message="Sex is required"></dxi-validation-rule>
-          </dx-validator>
-        </dx-select-box>
-
-        <dx-date-box
-          [(value)]="newEmployeeData.DateOfJoin"
-          label="Date of Join"
-          type="date"
-          [displayFormat]="'dd/MM/yyyy'"
-          placeholder="Select Date of Join"
-          stylingMode="outlined"
-          hint="Date of Join"
-        >
-          <dx-validator>
-            <dxi-validation-rule type="required" message="Date of Join is required"></dxi-validation-rule>
-          </dx-validator>
-        </dx-date-box>
-
-        <dx-select-box
-          [(value)]="newEmployeeData.IsWorking"
-          [items]="[{ id: true, text: 'Working' }, { id: false, text: 'Not Working' }]"
-          valueExpr="id"
-          displayExpr="text"
-          label="Status"
-          placeholder="Select Status"
-          hint="Status"
-        >
-          <dx-validator>
-            <dxi-validation-rule type="required" message="Status is required"></dxi-validation-rule>
-          </dx-validator>
-        </dx-select-box>
-      </div>
-    </div>
-
-    <div class="remarks-field">
-      <dx-text-area
-        [(value)]="newEmployeeData.Remarks"
-        label="Remarks"
-        hint="Remarks"
-        [height]="80"
-      ></dx-text-area>
-
     </div>
 
     <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
     </div>
   </div>
 </div>
+</dx-validation-group>

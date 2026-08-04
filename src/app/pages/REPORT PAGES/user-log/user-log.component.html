@@ -1,0 +1,123 @@
+<div class="view-wrapper list-page">
+  <dx-data-grid
+    #userLogGrid
+    class="grid theme-dependent"
+    noDataText=""
+    [dataSource]="userLogData"
+    [showBorders]="true"
+    [allowColumnResizing]="true"
+    [allowColumnReordering]="true"
+    [rowAlternationEnabled]="true"
+    rowAlternationInterval="2"
+    height="78vh"
+  >
+    <dxo-paging [enabled]="false"></dxo-paging>
+    <dxo-load-panel [showPane]="false"></dxo-load-panel>
+    <dxo-scrolling mode="virtual"></dxo-scrolling>
+    <dxo-sorting mode="multiple"></dxo-sorting>
+    <dxo-header-filter [visible]="true">
+      <dxo-search [enabled]="true"></dxo-search>
+    </dxo-header-filter>
+    <dxo-filter-row [visible]="false"></dxo-filter-row>
+    <dxo-column-chooser [enabled]="true" [height]="400"></dxo-column-chooser>
+
+    <dxo-export
+      [enabled]="true"
+      [allowExportSelectedData]="false"
+      [formats]="['xlsx']"
+    >
+    </dxo-export>
+
+    <dxo-toolbar>
+      <dxi-item location="before">
+        <div class="grid-header" style="margin-right: 20px;">User Log</div>
+      </dxi-item>
+      
+      <!-- Date Navigator -->
+      <dxi-item location="after" template="dateNavigatorTemplate" locateInMenu="never"></dxi-item>
+
+      <dxi-item
+        location="after"
+        locateInMenu="auto"
+        showText="inMenu"
+        widget="dxButton"
+        [options]="refreshButtonOptions"
+      ></dxi-item>
+      <dxi-item name="exportButton"></dxi-item>
+
+    </dxo-toolbar>
+
+    <div *dxTemplate="let data of 'dateNavigatorTemplate'">
+      <div class="date-navigator d-flex align-items-center" style="gap: 10px;">
+        <dx-button icon="chevronleft" stylingMode="text" [disabled]="isPreviousDateDisabled()" (onClick)="onPreviousDay()"></dx-button>
+        <dx-date-box
+          [(value)]="selectedDate"
+          displayFormat="dd MMM yyyy"
+          type="date"
+          width="200"
+          [min]="minDate"
+          [max]="todayDate"
+          [showClearButton]="false"
+          [elementAttr]="{ class: 'custom-date-box' }"
+          (onValueChanged)="onDateChanged($event)">
+        </dx-date-box>
+        <dx-button icon="chevronright" stylingMode="text" [disabled]="isNextDateDisabled()" (onClick)="onNextDay()" [elementAttr]="{ class: 'date-nav-btn' }"></dx-button>
+      </div>
+    </div>
+
+    <!-- Columns -->
+    <dxi-column caption="S.No" cellTemplate="rowIndexTemplate" [width]="50" alignment="center"></dxi-column>
+    <dxi-column dataField="EmployeeName" caption="Employee Name"></dxi-column>
+    <dxi-column dataField="Designation" caption="Designation"></dxi-column>
+    <dxi-column dataField="MinTime" caption="Check In" alignment="center"></dxi-column>
+    <dxi-column dataField="MaxTime" caption="Check Out" alignment="center"></dxi-column>
+    <dxi-column dataField="TotalHours" caption="Total Hours" alignment="center" cellTemplate="totalHoursTemplate"></dxi-column>
+    <dxi-column type="buttons" caption="Action" [width]="80" alignment="center">
+      <dxi-button
+        name="viewDetails"
+        hint="View Details"
+        [onClick]="viewDetailedLog"
+        template="viewIconTemplate"
+      ></dxi-button>
+    </dxi-column>
+
+    <div *dxTemplate="let data of 'rowIndexTemplate'">
+      {{ data.rowIndex + 1 }}
+    </div>
+
+    <div *dxTemplate="let data of 'totalHoursTemplate'">
+      <span [style.color]="data.value === 'Absent' ? 'red' : 'inherit'" [style.fontWeight]="data.value === 'Absent' ? 'bold' : 'normal'">
+        {{ data.value }}
+      </span>
+    </div>
+
+    <span *dxTemplate="let data of 'viewIconTemplate'">
+      <i class="bi bi-eye-fill" style="color: #007bff; font-size: 16px; cursor: pointer; vertical-align: middle;" title="View Details"></i>
+    </span>
+  </dx-data-grid>
+</div>
+
+<!-- Detailed Log Popup -->
+<dx-popup
+  [(visible)]="isPopupVisible"
+  [title]="'Logs: ' + selectedEmployeeName + ' (' + selectedDateString + ')'"
+  [width]="400"
+  [height]="500"
+  [showCloseButton]="true"
+>
+  <div *dxTemplate="let data of 'content'">
+    <dx-data-grid
+      [dataSource]="selectedEmployeeLogs"
+      [showBorders]="true"
+      [rowAlternationEnabled]="true"
+      height="100%"
+    >
+      <dxi-column caption="S.No" cellTemplate="popupRowIndexTemplate" [width]="50" alignment="center"></dxi-column>
+      <dxi-column dataField="loginTime" caption="Log In Times" alignment="center"></dxi-column>
+
+      <div *dxTemplate="let popupData of 'popupRowIndexTemplate'">
+        {{ popupData.rowIndex + 1 }}
+      </div>
+    </dx-data-grid>
+  </div>
+</dx-popup>

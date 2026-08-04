@@ -18,7 +18,8 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
-} from '@angular/core';
+} from '@angular/core'; 
+import { SystemServicesService } from '../../SYSTEM PAGES/system-services.service';
 import notify from 'devextreme/ui/notify';
 import {
   DxTabPanelModule,
@@ -174,6 +175,7 @@ export class UserEditFormComponent implements OnInit, OnChanges {
   exampleTimeFormat: any;
 
   constructor(
+    private systemServicesService: SystemServicesService, 
     private service: MasterReportService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -723,6 +725,9 @@ export class UserEditFormComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
+    this.systemServicesService.getCountryWithFlags().subscribe((res: any) => {
+      this.countryCodes = res;
+    });
     this.exampleDateFormat;
     this.getDropDownData('GENDER_DATA');
     this.getDropDownData('USER_ROLE');
@@ -928,11 +933,8 @@ export class UserEditFormComponent implements OnInit, OnChanges {
 
 
   get isAdminReadonly(): boolean {
-  return (
-    this.newUserData?.UserName?.toLowerCase() === 'bimal' &&
-    this.newUserData?.UserRoleID ==1
-  );
-}
+    return (this.newUserData?.isAdmin === true || this.newUserData?.isAdmin === 1) || this.newUserData?.UserRoleID == 1;
+  }
 
 }
 

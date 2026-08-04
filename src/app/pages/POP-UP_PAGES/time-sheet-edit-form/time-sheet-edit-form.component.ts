@@ -53,6 +53,7 @@ export class TimeSheetEditFormComponent implements OnChanges, OnInit, AfterViewC
   timesheetEntries: any[] = [];
   projectList: any[] = [];
   activityList: any[] = [];
+  dummyLoginTimes: any[] = [];
 
   constructor(
     private service: MasterReportService,
@@ -75,6 +76,25 @@ export class TimeSheetEditFormComponent implements OnChanges, OnInit, AfterViewC
       }
 
       this.fetchEntries(this.newUserData.TimesheetId);
+      this.fetchDeviceLogs(this.newUserData.EmployeeId, this.newUserData.TimeSheetDate);
+    }
+  }
+
+  fetchDeviceLogs(employeeId: number, logDate: string) {
+    if (employeeId && logDate) {
+      // Clear before fetching
+      this.dummyLoginTimes = [];
+      this.service.getDeviceLogs(employeeId, logDate).subscribe({
+        next: (res: any) => {
+          if (res && res.success && res.data) {
+            this.dummyLoginTimes = res.data.map((timeStr: string) => ({ loginTime: timeStr }));
+            this.cdr.detectChanges();
+          }
+        },
+        error: (err) => {
+          console.error("Error fetching device logs:", err);
+        }
+      });
     }
   }
 
@@ -215,10 +235,17 @@ export class TimeSheetEditFormComponent implements OnChanges, OnInit, AfterViewC
 
     const timesheetId = this.newUserData.TimesheetId;
 
+    let adjustedTsDate = this.newUserData.TimeSheetDate;
+    if (adjustedTsDate instanceof Date) {
+       adjustedTsDate = new Date(adjustedTsDate.getTime() - (adjustedTsDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    } else if (typeof adjustedTsDate === 'string' && adjustedTsDate.includes('T')) {
+       adjustedTsDate = adjustedTsDate.split('T')[0];
+    }
+
     const headerPayload = {
       ID: timesheetId,
       EmployeeId: this.newUserData.EmployeeId,
-      TimesheetDate: this.newUserData.TimeSheetDate,
+      TimesheetDate: adjustedTsDate,
       Hours: totalHoursFormatted
     };
 
