@@ -304,43 +304,16 @@ export class TimeSheetComponent {
     this.isAddFormPopupOpened = true;
   }
 
-  formatTime(timeString: any): string {
-    if (!timeString) return '';
-    try {
-      if (typeof timeString !== 'string') {
-        if (timeString.Hours !== undefined && timeString.Minutes !== undefined) {
-          timeString = `${timeString.Hours}:${timeString.Minutes}:00`;
-        } else if (timeString.hours !== undefined && timeString.minutes !== undefined) {
-          timeString = `${timeString.hours}:${timeString.minutes}:00`;
-        } else {
-          timeString = String(timeString);
-        }
-      }
-      const parts = timeString.split(':');
-      if (parts.length >= 2) {
-        let hours = parseInt(parts[0], 10);
-        let minInt = parseInt(parts[1], 10);
-        
-        // Add 5 hours and 30 minutes for IST
-        minInt += 30;
-        hours += 5;
-        if (minInt >= 60) {
-            hours += 1;
-            minInt -= 60;
-        }
-        hours = hours % 24;
+ formatTime(utcTime: string): string {
+  const date = new Date(`1970-01-01T${utcTime}Z`);
 
-        const minutesStr = minInt.toString().padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12; 
-        return `${hours}:${minutesStr} ${ampm}`;
-      }
-      return timeString;
-    } catch(e) {
-      return String(timeString);
-    }
-  }
+  return date.toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+}
 
   closeNewForm() {
     this.isAddFormPopupOpened = false;

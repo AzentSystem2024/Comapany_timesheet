@@ -86,8 +86,13 @@
 
     <dxi-column dataField="ProjectName" caption="Project" sortOrder="asc"></dxi-column>
     <dxi-column dataField="EmployeeName" caption="Employee"></dxi-column>
-    <dxi-column dataField="ActivityName" caption="Activity"></dxi-column>
     <dxi-column dataField="TotalHours" caption="Total Hours" dataType="number" format="#,##0.00"></dxi-column>
+
+    <dxi-column caption="Action" [width]="80" [fixed]="true" fixedPosition="right" cellTemplate="actionTemplate" alignment="center"></dxi-column>
+
+    <div *dxTemplate="let cellData of 'actionTemplate'" style="text-align: center;">
+      <i class="fas fa-eye" title="View Details" (click)="showDetailsPopup(cellData)" style="cursor: pointer; font-size: 16px; color: #007bff;"></i>
+    </div>
 
     <dxo-summary [calculateCustomSummary]="calculateCustomSummary">
       <dxi-group-item name="totalHoursSummary" column="TotalHours" summaryType="custom" [alignByColumn]="true"
@@ -97,3 +102,46 @@
 
   </dx-data-grid>
 </div>
+
+<dx-popup
+  [(visible)]="isDetailsPopupVisible"
+  [title]="detailsPopupTitle"
+  [width]="900"
+  height="auto"
+  maxHeight="80vh"
+  [showTitle]="true"
+  [dragEnabled]="true"
+  [closeOnOutsideClick]="true"
+  [showCloseButton]="true"
+>
+  <div *dxTemplate="let data of 'content'">
+    <dx-data-grid 
+      [dataSource]="timesheetDetailsData" 
+      [showBorders]="true"
+      [allowColumnResizing]="true"
+      columnResizingMode="widget"
+      height="100%">
+      
+      <dxo-scrolling mode="standard" showScrollbar="always"></dxo-scrolling>
+      <dxo-paging [enabled]="false"></dxo-paging>
+      <dxo-header-filter [visible]="true"></dxo-header-filter>
+      <dxo-filter-row [visible]="true" [showOperationChooser]="false"></dxo-filter-row>
+
+      <dxi-column dataField="Date" caption="Date" dataType="date" format="dd/MM/yyyy" [width]="100" sortOrder="desc"></dxi-column>
+      <dxi-column dataField="Activity" caption="Activity" [width]="150"></dxi-column>
+      <dxi-column dataField="Description" caption="Description" cellTemplate="descriptionTemplate"></dxi-column>
+      <dxi-column dataField="TotalHours" caption="Total Hours" dataType="number" format="#,##0.00" [width]="130"></dxi-column>
+      
+      <div *dxTemplate="let cell of 'descriptionTemplate'">
+        <div style="white-space: normal; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">
+          {{ cell.value }}
+        </div>
+      </div>
+      
+      <dxo-summary>
+        <dxi-total-item column="TotalHours" summaryType="sum" displayFormat="{0}" valueFormat="#,##0.00"></dxi-total-item>
+      </dxo-summary>
+
+    </dx-data-grid>
+  </div>
+</dx-popup>

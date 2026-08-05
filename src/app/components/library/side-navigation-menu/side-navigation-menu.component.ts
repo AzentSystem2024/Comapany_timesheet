@@ -117,8 +117,8 @@ export class SideNavigationMenuComponent
       };
       navItems.push(systemMenu);
     } else {
-       systemMenu.path = undefined;
-       systemMenu.icon = 'toolbox';
+      systemMenu.path = undefined;
+      systemMenu.icon = 'toolbox';
     }
 
     const securityPolicyMenu = navItems.find((m: any) => m.path === 'security-policy');
@@ -132,7 +132,7 @@ export class SideNavigationMenuComponent
     }
 
     // --- CREATE 'DATAS' PARENT MENU ---
-    let datasMenu = navItems.find((m: any) => m.text === 'DATAS' || m.text === 'Datas');
+    let datasMenu = navItems.find((m: any) => m.text === 'DATAS' || m.text === 'Datas' || m.text === 'Operations' || m.id === 'datas-menu');
     if (!datasMenu) {
       datasMenu = {
         id: 'datas-menu',
@@ -142,6 +142,16 @@ export class SideNavigationMenuComponent
         icon: 'folder'
       };
       navItems.push(datasMenu);
+    } else {
+      datasMenu.text = 'Operations';
+    }
+
+    // Move Reports BELOW Operations
+    if (reportMenu) {
+      reportMenu.GroupID = '0';
+      // Pull reportMenu out of its current position and push it to the end
+      navItems = navItems.filter((m: any) => m.id !== reportMenu.id);
+      navItems.push(reportMenu);
     }
 
     // Move Timesheet inside DATAS
@@ -180,9 +190,9 @@ export class SideNavigationMenuComponent
     if (!isAdmin) {
       navItems = navItems.filter((m: any) =>
         !(
-          m.text === 'Reports' || 
-          m.text === 'Sidebar Reports' || 
-          (m.MenuName && m.MenuName.includes('Report')) || 
+          m.text === 'Reports' ||
+          m.text === 'Sidebar Reports' ||
+          (m.MenuName && m.MenuName.includes('Report')) ||
           m.path === 'timesheet-summary' ||
           m.path === 'report-designer' ||
           m.text === 'System' ||

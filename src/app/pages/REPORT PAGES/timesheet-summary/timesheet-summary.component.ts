@@ -12,6 +12,9 @@ import notify from 'devextreme/ui/notify';
 export class TimesheetSummaryComponent implements OnInit {
 
   timesheetData: any[] = [];
+  timesheetDetailsData: any[] = [];
+  isDetailsPopupVisible: boolean = false;
+  detailsPopupTitle: string = 'Timesheet Details';
 
   // Date filter controls
   years: number[] = [];
@@ -136,11 +139,46 @@ export class TimesheetSummaryComponent implements OnInit {
       }
     }
   }
+
+  showDetailsPopup(e: any) {
+    const rowData = e.row.data;
+    const projectName = rowData.ProjectName || rowData.project || rowData.Project;
+    const employeeName = rowData.EmployeeName || rowData.employee || rowData.Employee;
+    const activityName = rowData.ActivityName || rowData.activity || rowData.Activity;
+    
+    const startStr = this.startDate ? this.reportService.formatDate(this.startDate) : '';
+    const endStr = this.endDate ? this.reportService.formatDate(this.endDate) : '';
+
+    let title = `Details: ${projectName} - ${employeeName}`;
+    if (startStr && endStr) {
+      title += ` (${startStr} to ${endStr})`;
+    } else if (startStr) {
+      title += ` (From ${startStr})`;
+    } else if (endStr) {
+      title += ` (Until ${endStr})`;
+    }
+    this.detailsPopupTitle = title;
+
+    this.reportService.fetch_Timesheet_Summary_Details_Data(projectName, employeeName, activityName, startStr, endStr).subscribe({
+      next: (res: any) => {
+        if (res && res.data) {
+          this.timesheetDetailsData = res.data;
+          this.isDetailsPopupVisible = true;
+        } else {
+          this.timesheetDetailsData = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching details:', err);
+        notify('Failed to load report details', 'error', 3000);
+      }
+    });
+  }
 }
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DxDataGridModule, DxDateBoxModule, DxSelectBoxModule, DxButtonModule } from 'devextreme-angular';
+import { DxDataGridModule, DxDateBoxModule, DxSelectBoxModule, DxButtonModule, DxPopupModule } from 'devextreme-angular';
 
 @NgModule({
   imports: [
@@ -148,7 +186,8 @@ import { DxDataGridModule, DxDateBoxModule, DxSelectBoxModule, DxButtonModule } 
     DxDataGridModule,
     DxDateBoxModule,
     DxSelectBoxModule,
-    DxButtonModule
+    DxButtonModule,
+    DxPopupModule
   ],
   declarations: [TimesheetSummaryComponent],
   exports: [TimesheetSummaryComponent]

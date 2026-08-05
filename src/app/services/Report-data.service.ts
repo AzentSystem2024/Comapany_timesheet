@@ -149,6 +149,23 @@ export class ReportService {
     return this.http.get(url);
   }
 
+  //========fetch datasource of Timesheet Summary Details========
+  fetch_Timesheet_Summary_Details_Data(projectName: string, employeeName: string, activityName: string, startDate?: string, endDate?: string) {
+    let url = `${this.BASE_URL}Report/timesheet-summary-details`;
+    let queryParams = [];
+    if (projectName) queryParams.push(`projectName=${encodeURIComponent(projectName)}`);
+    if (employeeName) queryParams.push(`employeeName=${encodeURIComponent(employeeName)}`);
+    if (activityName) queryParams.push(`activityName=${encodeURIComponent(activityName)}`);
+    if (startDate) queryParams.push(`startDate=${encodeURIComponent(startDate)}`);
+    if (endDate) queryParams.push(`endDate=${encodeURIComponent(endDate)}`);
+    
+    if (queryParams.length > 0) {
+      url += '?' + queryParams.join('&');
+    }
+    
+    return this.http.get(url);
+  }
+
   //==============Export function==================
   exportDataGrid(e: any, fileName: string): void {
     if (e.format === 'pdf') {
