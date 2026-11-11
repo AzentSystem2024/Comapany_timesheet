@@ -104,6 +104,12 @@ export class SideNavigationMenuComponent
         path: 'timesheet-summary',
         GroupID: reportMenu.id
       });
+      navItems.push({
+        id: 'attendance-menu',
+        text: 'Attendance',
+        path: 'attendance',
+        GroupID: reportMenu.id
+      });
     }
 
     let systemMenu = navItems.find((m: any) => m.text === 'System' || (m.MenuName && m.MenuName.includes('System')));
@@ -180,6 +186,31 @@ export class SideNavigationMenuComponent
         GroupID: datasMenu.id
       });
     }
+
+    const calendarMenu = navItems.find((m: any) => m.path === 'calendar' || (m.text && m.text.toUpperCase() === 'CALENDAR'));
+    if (calendarMenu) {
+      calendarMenu.GroupID = datasMenu.id;
+      calendarMenu.text = 'Calendar';
+    } else {
+      navItems.push({
+        id: 'calendar-menu',
+        text: 'Calendar',
+        path: 'calendar',
+        GroupID: datasMenu.id
+      });
+    }
+
+    // Ensure order inside Operations: Timesheet -> User Log -> Calendar
+    const opsTimesheet = navItems.find((m: any) => m.path === 'timesheet' || m.id === 'timesheet-menu');
+    const opsUserLog = navItems.find((m: any) => m.path === 'user-log' || m.id === 'user-log-menu');
+    const opsCalendar = navItems.find((m: any) => m.path === 'calendar' || m.id === 'calendar-menu');
+
+    navItems = navItems.filter(
+      (m: any) => m !== opsTimesheet && m !== opsUserLog && m !== opsCalendar
+    );
+    if (opsTimesheet) navItems.push(opsTimesheet);
+    if (opsUserLog) navItems.push(opsUserLog);
+    if (opsCalendar) navItems.push(opsCalendar);
     // ----------------------------------
 
     const logData = JSON.parse(localStorage.getItem('logData') || '{}');

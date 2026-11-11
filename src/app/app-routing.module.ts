@@ -27,7 +27,9 @@ import { EmployeeMasterComponent } from './pages/MASTER PAGES/employee-master/em
 import { DesignationComponent } from './pages/MASTER PAGES/designation/designation.component';
 import { ProjectsComponent } from './pages/MASTER PAGES/projects/projects.component';
 import { TimesheetSummaryComponent } from './pages/REPORT PAGES/timesheet-summary/timesheet-summary.component';
+import { AttendanceComponent } from './pages/REPORT PAGES/attendance/attendance.component';
 import { UserLogComponent } from './pages/REPORT PAGES/user-log/user-log.component';
+import { CalendarComponent } from './pages/calendar/calendar.component';
 import { ReportDesignerComponent } from './report-designer/report-designer.component';
 
 const routes: Routes = [
@@ -126,6 +128,11 @@ const routes: Routes = [
         canActivate: [AuthGuardService],
       },
       {
+        path: 'calendar',
+        component: CalendarComponent,
+        canActivate: [AuthGuardService],
+      },
+      {
         path: 'speciality',
         redirectTo: 'projects',
         pathMatch: 'full'
@@ -169,6 +176,11 @@ const routes: Routes = [
       {
         path: 'timesheet-summary',
         component: TimesheetSummaryComponent,
+        canActivate: [AuthGuardService],
+      },
+      {
+        path: 'attendance',
+        component: AttendanceComponent,
         canActivate: [AuthGuardService],
       },
       {

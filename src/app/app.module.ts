@@ -38,7 +38,9 @@ import { CustomReuseStrategy } from './custom-reuse-strategy';
 import { AuthInterceptor } from './services/auth.interceptor';
 import { ConfigService } from './services/config.service';
 import { TimesheetSummaryModule } from './pages/REPORT PAGES/timesheet-summary/timesheet-summary.component';
+import { AttendanceModule } from './pages/REPORT PAGES/attendance/attendance.component';
 import { UserLogModule } from './pages/REPORT PAGES/user-log/user-log.component';
+import { CalendarModule } from './pages/calendar/calendar.component';
 
 export function initializeApp(configService: ConfigService) {
   return () => configService.load(); 
@@ -74,7 +76,9 @@ export function initializeApp(configService: ConfigService) {
     ResetPasswordModule,
     ChangePasswordModule,
     TimesheetSummaryModule,
+    AttendanceModule,
     UserLogModule,
+    CalendarModule,
     DxReportDesignerModule,
   ],
   providers: [

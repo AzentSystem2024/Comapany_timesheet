@@ -1,0 +1,90 @@
+<div class="dx-card" style="padding: 10px; margin-top: -10px;">
+  <!-- Filter Parameters -->
+  <div class="paramsDiv SearchParams-container" [ngClass]="{ 'hide-content': !isContentVisible }">
+    <div class="filter-section">
+      <div class="filter-group">
+        <div class="filter-item">
+          <label>Year</label>
+          <dx-select-box [items]="years" [(value)]="selectedYear" (onValueChanged)="onYearChanged($event)">
+          </dx-select-box>
+        </div>
+
+        <div class="filter-item">
+          <label>Month</label>
+          <dx-select-box [items]="months" displayExpr="name" valueExpr="value" [(value)]="selectedMonth"
+            (onValueChanged)="onMonthChanged($event)">
+          </dx-select-box>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <dx-button text="Apply" type="success" stylingMode="contained" (onClick)="applyFilter()" class="apply-btn">
+        </dx-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle Filter View Button -->
+  <div class="button-container mt-1 mb-2 d-flex justify-content-center">
+    <dx-button class="toggleButton" icon="{{ isContentVisible ? 'chevronup' : 'chevrondown' }}" stylingMode="outlined"
+      type="normal" [hint]="isContentVisible ? 'Hide Filter Content' : 'Show Filter Field'" [width]="200" [height]="13"
+      (onClick)="toggleContent()">
+    </dx-button>
+  </div>
+
+  <!-- Attendance DataGrid -->
+  <dx-data-grid
+    id="attendanceGrid"
+    [dataSource]="attendanceData"
+    [showBorders]="true"
+    [columnAutoWidth]="true"
+    [allowColumnReordering]="true"
+    height="calc(100vh - 210px)"
+  >
+    <dxo-scrolling mode="standard" showScrollbar="always"></dxo-scrolling>
+    <dxo-paging [enabled]="false"></dxo-paging>
+    <dxo-pager [visible]="false"></dxo-pager>
+
+    <dxo-header-filter [visible]="isFilterRowVisible">
+      <dxo-search [enabled]="true"></dxo-search>
+    </dxo-header-filter>
+    <dxo-filter-row [visible]="isFilterRowVisible"></dxo-filter-row>
+    <dxo-column-chooser [enabled]="true" [height]="400"></dxo-column-chooser>
+    <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx']"></dxo-export>
+
+    <dxo-toolbar>
+      <dxi-item location="before">
+        <div class="grid-header" style="margin-right: 20px;">Attendance</div>
+      </dxi-item>
+      <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton" [options]="{
+            icon: isFilterRowVisible ? 'filter' : 'filter',
+            hint: isFilterRowVisible ? 'Hide Filter Row' : 'Show Filter Row',
+            onClick: toggleFilterRow,
+            stylingMode: 'text',
+            elementAttr: { class: 'commonButtons' }
+          }"></dxi-item>
+      <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton" [options]="{
+            icon: 'refresh',
+            hint: 'Refresh',
+            onClick: refresh,
+            stylingMode: 'text'
+          }"></dxi-item>
+      <dxi-item name="exportButton" location="after" cssClass="custom-export-button"></dxi-item>
+      <dxi-item name="columnChooserButton" location="after"></dxi-item>
+    </dxo-toolbar>
+
+    <!-- Table Columns: Employee Name, Total Working Days, Days Worked, Leave -->
+    <dxi-column dataField="EmployeeName" caption="Employee Name" sortOrder="asc"></dxi-column>
+    <dxi-column dataField="ExpectedWorkingDaysToDate" caption="Total Working Days" dataType="number" alignment="center"></dxi-column>
+    <dxi-column dataField="DaysWorkedOnWorkingDays" caption="Days Worked" dataType="number" alignment="center"></dxi-column>
+    <dxi-column dataField="TotalLeaves" caption="Leave" alignment="center" cellTemplate="leaveTemplate"></dxi-column>
+
+    <div *dxTemplate="let cell of 'leaveTemplate'" style="text-align: center;">
+      <span class="leave-badge" [class.has-leave]="cell.value > 0" [class.no-leave]="cell.value === 0">
+        {{ cell.value }}
+      </span>
+    </div>
+
+  </dx-data-grid>
+</div>
+

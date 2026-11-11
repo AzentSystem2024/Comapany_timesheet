@@ -166,6 +166,21 @@ export class ReportService {
     return this.http.get(url);
   }
 
+  //======== fetch datasource of Monthly Attendance & Leaves ========
+  fetch_Monthly_Attendance_Data(year: number, month: number, employeeId?: number) {
+    let url = `${this.BASE_URL}Report/monthly-attendance?year=${year}&month=${month}`;
+    if (employeeId) {
+      url += `&employeeId=${employeeId}`;
+    }
+    return this.http.get(url);
+  }
+
+  //======== fetch datasource of Monthly Attendance Details (Day-by-Day) ========
+  fetch_Monthly_Attendance_Details_Data(year: number, month: number, employeeId: number) {
+    const url = `${this.BASE_URL}Report/monthly-attendance-details?year=${year}&month=${month}&employeeId=${employeeId}`;
+    return this.http.get(url);
+  }
+
   //==============Export function==================
   exportDataGrid(e: any, fileName: string): void {
     if (e.format === 'pdf') {

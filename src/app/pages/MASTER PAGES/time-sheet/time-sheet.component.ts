@@ -74,13 +74,47 @@ export class TimeSheetComponent {
 
   selectedDate: Date = new Date();
 
+  formatDate(dateVal: any): string {
+    if (!dateVal) return '';
+    if (typeof dateVal === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateVal)) {
+      return dateVal.substring(0, 10);
+    }
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getISTNow(): { istDateStr: string; istHour: number } {
+    const now = new Date();
+    try {
+      const istDateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+      const istTimeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false });
+      const istHour = parseInt(istTimeStr.split(':')[0], 10);
+      if (istDateStr && !isNaN(istHour)) {
+        return { istDateStr, istHour };
+      }
+    } catch (e) {}
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const istDate = new Date(utcTime + (330 * 60000));
+    const year = istDate.getFullYear();
+    const month = String(istDate.getMonth() + 1).padStart(2, '0');
+    const day = String(istDate.getDate()).padStart(2, '0');
+    return {
+      istDateStr: `${year}-${month}-${day}`,
+      istHour: istDate.getHours()
+    };
+  }
+
   datasource = new DataSource<any>({
     load: () =>
       new Promise((resolve, reject) => {
         const logData = JSON.parse(localStorage.getItem('logData') || '{}');
         const logUserId = logData.UserID || logData.userId || logData.id || logData.ID || logData.EmployeeID || logData.employeeID || logData.employeeId;
         const logUserRole = logData.UserRoleName || logData.userRoleName || '';
-        this.isAdmin = (logUserRole === 'Administrator');
+        this.isAdmin = (logUserRole === 'Administrator' || logData.isAdmin === true || logData.isAdmin === 1);
         this.logUserId = logUserId;
         
         let reqDate: string | undefined = undefined;
@@ -88,8 +122,7 @@ export class TimeSheetComponent {
         let reqIsAdmin: boolean = this.isAdmin;
         
         if (this.selectedDate) {
-           const selDate = new Date(this.selectedDate);
-           reqDate = new Date(selDate.getTime() - (selDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+           reqDate = this.formatDate(this.selectedDate);
         }
 
         this.service.get_Timesheet_List(reqDate, reqEmployeeId, reqIsAdmin).subscribe({
@@ -100,7 +133,12 @@ export class TimeSheetComponent {
 
             resolve(data);
           },
-          error: (err) => reject(err),
+          error: (err) => {
+            const errorMessage = err?.status === 0 || err?.status === 504
+              ? 'Unable to connect to the server. Please ensure the backend API is running.'
+              : (err?.error?.message || err?.message || 'Failed to load timesheet data.');
+            reject(errorMessage);
+          },
         });
       }),
   });
@@ -127,17 +165,15 @@ export class TimeSheetComponent {
   }
 
   isNextDateDisabled(): boolean {
-    const selDate = new Date(this.selectedDate);
-    const selectedDateStr = new Date(selDate.getTime() - (selDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-    const todayStr = new Date(this.todayDate.getTime() - (this.todayDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    const selectedDateStr = this.formatDate(this.selectedDate);
+    const todayStr = this.formatDate(this.todayDate);
     return selectedDateStr >= todayStr;
   }
 
   isPreviousDateDisabled(): boolean {
     if (!this.minDate) return false;
-    const selDate = new Date(this.selectedDate);
-    const selectedDateStr = new Date(selDate.getTime() - (selDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-    const minStr = new Date(this.minDate.getTime() - (this.minDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    const selectedDateStr = this.formatDate(this.selectedDate);
+    const minStr = this.formatDate(this.minDate);
     return selectedDateStr <= minStr;
   }
 
@@ -196,23 +232,21 @@ export class TimeSheetComponent {
   isEditDeleteAllowed = (e: any): boolean => {
     const logData = JSON.parse(localStorage.getItem('logData') || '{}');
     const logUserRole = logData.UserRoleName || logData.userRoleName || '';
-    if (logUserRole === 'Administrator') {
+    if (logUserRole === 'Administrator' || logData.isAdmin === true || logData.isAdmin === 1) {
       return true;
     }
 
     const rowData = e.row.data;
     if (!rowData || !rowData.TimesheetDate) return false;
     
-    const timesheetDate = new Date(rowData.TimesheetDate);
-    const today = new Date();
-    
-    const isSameDate = timesheetDate.getFullYear() === today.getFullYear() &&
-                       timesheetDate.getMonth() === today.getMonth() &&
-                       timesheetDate.getDate() === today.getDate();
-                       
-    const isBefore11PM = today.getHours() < 23;
-    
-    return isSameDate && isBefore11PM;
+    const timesheetDateStr = this.formatDate(rowData.TimesheetDate);
+    const { istDateStr, istHour } = this.getISTNow();
+
+    if (timesheetDateStr === istDateStr && istHour >= 23) {
+      return false;
+    }
+
+    return true;
   };
 
   onEditingRow(event): void {
@@ -224,8 +258,17 @@ export class TimeSheetComponent {
       return;
     }
 
+    const rowData = event.data;
+    const timesheetDateStr = this.formatDate(rowData?.TimesheetDate);
+    const { istDateStr, istHour } = this.getISTNow();
+
+    if (timesheetDateStr === istDateStr && istHour >= 23) {
+      notify({ message: "Today's Time is Over and you cannot update or add at that day.", position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+      return;
+    }
+
     if (!this.isEditDeleteAllowed({ row: { data: event.data } })) {
-      notify({ message: 'Editing is only allowed on the day of creation until 11 PM.', position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+      notify({ message: "Today's Time is Over and you cannot update or add at that day.", position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
       return;
     }
     
@@ -287,14 +330,26 @@ export class TimeSheetComponent {
       return;
     }
 
-    if (!this.isAdmin && this.dataGrid && this.dataGrid.instance) {
-      const allData = this.dataGrid.instance.getDataSource().items();
-      const selDateStr = new Date(this.selectedDate.getTime() - (this.selectedDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-      const hasExisting = allData.some((x: any) => {
+    const { istDateStr, istHour } = this.getISTNow();
+    const selDateStr = this.formatDate(this.selectedDate);
+
+    if (selDateStr === istDateStr && istHour >= 23) {
+      notify({ message: "Today's Time is Over and you cannot update or add at that day.", position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+      return;
+    }
+
+    if (!this.isAdmin) {
+      const listToCheck = (this.allTimesheets && this.allTimesheets.length > 0)
+        ? this.allTimesheets
+        : (this.dataGrid && this.dataGrid.instance ? this.dataGrid.instance.getDataSource().items() : []);
+      const selDateStr = this.formatDate(this.selectedDate);
+      const hasExisting = listToCheck.some((x: any) => {
         const tsDate = x.timesheetDate || x.TimesheetDate;
+        const empId = x.employeeID || x.EmployeeID || x.employeeId || x.EmployeeId;
         if (!tsDate) return false;
-        const rowDateStr = new Date(tsDate).toISOString().split('T')[0];
-        return rowDateStr === selDateStr;
+        const rowDateStr = this.formatDate(tsDate);
+        const matchEmp = empId ? empId.toString() === this.logUserId?.toString() : true;
+        return rowDateStr === selDateStr && matchEmp;
       });
       if (hasExisting) {
         notify({ message: 'You have already created a timesheet for this date. Please edit it instead.', position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
@@ -342,29 +397,34 @@ export class TimeSheetComponent {
     const finalMins = totalMinutesCount % 60;
     const totalHoursFormatted = parseFloat(`${finalHours}.${finalMins < 10 ? '0' + finalMins : finalMins}`);
 
-    if (this.dataGrid && this.dataGrid.instance) {
-      const allData = this.dataGrid.instance.getDataSource().items();
-      const selDateStr = new Date(data.TimeSheetDate.getTime() - (data.TimeSheetDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-      const hasExisting = allData.some((x: any) => {
-        const tsDate = x.timesheetDate || x.TimesheetDate;
-        const empId = x.employeeID || x.EmployeeID || x.employeeId || x.EmployeeId;
-        if (!tsDate || !empId) return false;
-        const rowDateStr = new Date(tsDate).toISOString().split('T')[0];
-        return rowDateStr === selDateStr && empId.toString() === finalEmployeeId.toString();
-      });
-      if (hasExisting) {
-        notify({ message: 'A timesheet already exists for this date. Please edit it instead.', position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
-        if (this.newFormComponent) this.newFormComponent.isSaving = false;
-        return;
-      }
+    const targetDate = data.TimeSheetDate || this.selectedDate;
+    const selDateStr = this.formatDate(targetDate);
+    const { istDateStr, istHour } = this.getISTNow();
+
+    if (selDateStr === istDateStr && istHour >= 23) {
+      notify({ message: "Today's Time is Over and you cannot update or add at that day.", position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+      if (this.newFormComponent) this.newFormComponent.isSaving = false;
+      return;
     }
 
-    let adjustedTsDate = data.TimeSheetDate;
-    if (adjustedTsDate instanceof Date) {
-       adjustedTsDate = new Date(adjustedTsDate.getTime() - (adjustedTsDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-    } else if (typeof adjustedTsDate === 'string' && adjustedTsDate.includes('T')) {
-       adjustedTsDate = adjustedTsDate.split('T')[0];
+    const listToCheck = (this.allTimesheets && this.allTimesheets.length > 0)
+      ? this.allTimesheets
+      : (this.dataGrid && this.dataGrid.instance ? this.dataGrid.instance.getDataSource().items() : []);
+
+    const hasExisting = listToCheck.some((x: any) => {
+      const tsDate = x.timesheetDate || x.TimesheetDate;
+      const empId = x.employeeID || x.EmployeeID || x.employeeId || x.EmployeeId;
+      if (!tsDate || !empId) return false;
+      const rowDateStr = this.formatDate(tsDate);
+      return rowDateStr === selDateStr && empId.toString() === finalEmployeeId.toString();
+    });
+    if (hasExisting) {
+      notify({ message: 'A timesheet already exists for this date. Please edit it instead.', position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+      if (this.newFormComponent) this.newFormComponent.isSaving = false;
+      return;
     }
+
+    const adjustedTsDate = selDateStr;
 
     const headerPayload = {
       EmployeeId: finalEmployeeId || 0,
@@ -403,6 +463,9 @@ export class TimeSheetComponent {
                     if (!hasError) {
                       notify({ message: 'All timesheet entries saved successfully!', position: { at: 'top right', my: 'top right' }, displayTime: 1500 }, 'success');
                       this.isAddFormPopupOpened = false;
+                      if (targetDate) {
+                        this.selectedDate = new Date(targetDate);
+                      }
                       this.dataGrid.instance.refresh();
                     } else if (this.newFormComponent) {
                       this.newFormComponent.isSaving = false;
@@ -426,6 +489,7 @@ export class TimeSheetComponent {
         }
       },
       error: (err: any) => {
+        if (this.newFormComponent) this.newFormComponent.isSaving = false;
         notify({ message: 'Error saving header: ' + err.message, position: { at: 'top right', my: 'top right' }, displayTime: 1500 }, 'error');
       }
     });

@@ -12,8 +12,10 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild,
   NgModule
 } from '@angular/core';
@@ -38,7 +40,7 @@ import notify from 'devextreme/ui/notify';
   styleUrls: ['./time-sheet-new-form.component.scss'],
   providers: [MasterReportService, ReactiveFormsModule],
 })
-export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked {
+export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked, OnChanges {
   @ViewChild('validationGroup', { static: true }) validationGroup!: DxValidationGroupComponent;
   @ViewChild(DxDataGridComponent, { static: false }) dataGrid!: DxDataGridComponent;
   
@@ -48,10 +50,45 @@ export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked {
   @Input() existingTimesheets: any[] = [];
 
   loggedUserName: string = '';
+  todayDate: Date = new Date();
   newUserData: any = {
     TimeSheetDate: new Date(),
     EmployeeId: null
   };
+
+  formatDate(dateVal: any): string {
+    if (!dateVal) return '';
+    if (typeof dateVal === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateVal)) {
+      return dateVal.substring(0, 10);
+    }
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getISTNow(): { istDateStr: string; istHour: number } {
+    const now = new Date();
+    try {
+      const istDateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+      const istTimeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false });
+      const istHour = parseInt(istTimeStr.split(':')[0], 10);
+      if (istDateStr && !isNaN(istHour)) {
+        return { istDateStr, istHour };
+      }
+    } catch (e) {}
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const istDate = new Date(utcTime + (330 * 60000));
+    const year = istDate.getFullYear();
+    const month = String(istDate.getMonth() + 1).padStart(2, '0');
+    const day = String(istDate.getDate()).padStart(2, '0');
+    return {
+      istDateStr: `${year}-${month}-${day}`,
+      istHour: istDate.getHours()
+    };
+  }
 
   timesheetEntries: any[] = [];
   projectList: any[] = [];
@@ -69,14 +106,10 @@ export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked {
     const logData = JSON.parse(localStorage.getItem('logData') || '{}');
     this.loggedUserName = logData.EmployeeName || logData.UserName || 'Current User';
     const logUserRole = logData.UserRoleName || logData.userRoleName || '';
-    this.isAdmin = (logUserRole === 'Administrator');
+    this.isAdmin = (logUserRole === 'Administrator' || logData.isAdmin === true || logData.isAdmin === 1);
     this.logUserId = logData.UserID || logData.userId || logData.id || logData.ID || logData.EmployeeID || logData.employeeID || logData.employeeId;
     
-    if (this.isAdmin) {
-        this.newUserData.TimeSheetDate = this.selectedDate;
-    } else {
-        this.newUserData.TimeSheetDate = new Date(); // Always force today's date for standard users
-    }
+    this.newUserData.TimeSheetDate = this.selectedDate ? new Date(this.selectedDate) : new Date();
     
     this.newUserData.EmployeeId = this.isAdmin ? null : this.logUserId;
 
@@ -100,6 +133,14 @@ export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked {
       },
       error: (err) => console.error(err)
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedDate'] && !changes['selectedDate'].firstChange) {
+      if (this.selectedDate) {
+        this.newUserData.TimeSheetDate = new Date(this.selectedDate);
+      }
+    }
   }
 
   ngAfterViewChecked() {
@@ -185,6 +226,15 @@ export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked {
       await this.dataGrid.instance.saveEditData();
     }
     
+    const targetDateStr = this.formatDate(this.newUserData.TimeSheetDate);
+    const { istDateStr, istHour } = this.getISTNow();
+
+    if (targetDateStr === istDateStr && istHour >= 23) {
+      notify({ message: "Today's Time is Over and you cannot update or add at that day.", position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+      this.isSaving = false;
+      return;
+    }
+
     if (this.validateForm()) {
       let currentEntries = this.timesheetEntries;
       if (this.dataGrid && this.dataGrid.instance) {
@@ -253,24 +303,50 @@ export class TimeSheetNewFormComponent implements OnInit, AfterViewChecked {
   }
 
   onEmployeeOrDateChanged() {
-    if (this.newUserData.EmployeeId && this.newUserData.TimeSheetDate) {
-      const selDateStr = new Date(this.newUserData.TimeSheetDate.getTime() - (this.newUserData.TimeSheetDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-      
-      const existing = this.existingTimesheets.find(x => {
-        const tsDate = x.timesheetDate || x.TimesheetDate;
-        const empId = x.employeeID || x.EmployeeID || x.employeeId || x.EmployeeId;
-        if (!tsDate || !empId) return false;
-        const rowDateStr = new Date(tsDate).toISOString().split('T')[0];
-        return rowDateStr === selDateStr && empId.toString() === this.newUserData.EmployeeId.toString();
-      });
+    if (this.newUserData.TimeSheetDate) {
+      const selDateStr = this.formatDate(this.newUserData.TimeSheetDate);
+      const { istDateStr, istHour } = this.getISTNow();
 
-      if (existing) {
-        const empName = existing.employeeName || existing.EmployeeName || 'This employee';
-        notify({ message: `${empName} Already Have Timesheet At This Day Please Edit it`, position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
-        
-        setTimeout(() => {
-          this.newUserData.EmployeeId = null;
-        }, 100);
+      if (selDateStr === istDateStr && istHour >= 23) {
+        notify({ message: "Today's Time is Over and you cannot update or add at that day.", position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+        return;
+      }
+    }
+
+    if (this.newUserData.EmployeeId && this.newUserData.TimeSheetDate) {
+      const selDateStr = this.formatDate(this.newUserData.TimeSheetDate);
+      
+      const checkExisting = (list: any[]) => {
+        const existing = list.find(x => {
+          const tsDate = x.timesheetDate || x.TimesheetDate;
+          const empId = x.employeeID || x.EmployeeID || x.employeeId || x.EmployeeId;
+          if (!tsDate || !empId) return false;
+          const rowDateStr = this.formatDate(tsDate);
+          return rowDateStr === selDateStr && empId.toString() === this.newUserData.EmployeeId.toString();
+        });
+
+        if (existing) {
+          const empName = existing.employeeName || existing.EmployeeName || 'This employee';
+          notify({ message: `${empName} Already Have Timesheet At This Day Please Edit it`, position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+          
+          setTimeout(() => {
+            this.newUserData.EmployeeId = null;
+          }, 100);
+        }
+      };
+
+      if (this.existingTimesheets && this.existingTimesheets.length > 0 && selDateStr === this.formatDate(this.selectedDate)) {
+        checkExisting(this.existingTimesheets);
+      } else {
+        this.service.get_Timesheet_List(selDateStr, undefined, true).subscribe({
+          next: (res: any) => {
+            const list = res && res.data ? res.data : (Array.isArray(res) ? res : []);
+            checkExisting(list);
+          },
+          error: () => {
+            checkExisting(this.existingTimesheets || []);
+          }
+        });
       }
     }
   }

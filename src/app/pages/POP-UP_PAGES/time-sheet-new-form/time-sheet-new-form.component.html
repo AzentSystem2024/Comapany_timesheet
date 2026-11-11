@@ -53,9 +53,12 @@
             <div style="width: 200px;">
               <dx-date-box
                 [(value)]="newUserData.TimeSheetDate"
+                displayFormat="dd MMM yyyy"
+                type="date"
                 label="Date"
                 labelMode="floating"
                 [readOnly]="!isAdmin"
+                [max]="todayDate"
                 (onValueChanged)="onEmployeeOrDateChanged()"
               ></dx-date-box>
             </div>

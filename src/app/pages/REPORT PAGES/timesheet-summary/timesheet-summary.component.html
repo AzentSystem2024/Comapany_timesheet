@@ -42,9 +42,14 @@
     </dx-button>
   </div>
 
-  <dx-data-grid id="timesheetSummaryGrid" [dataSource]="timesheetData" [showBorders]="true" [columnAutoWidth]="true"
-    [allowColumnReordering]="true" height="calc(100vh - 210px)">
-
+  <dx-data-grid
+    id="timesheetSummaryGrid"
+    [dataSource]="timesheetData"
+    [showBorders]="true"
+    [columnAutoWidth]="true"
+    [allowColumnReordering]="true"
+    height="calc(100vh - 210px)"
+  >
     <dxo-scrolling mode="standard" showScrollbar="always"></dxo-scrolling>
 
     <dxo-paging [pageSize]="10"></dxo-paging>

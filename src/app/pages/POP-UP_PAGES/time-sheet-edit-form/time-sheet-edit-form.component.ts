@@ -55,6 +55,40 @@ export class TimeSheetEditFormComponent implements OnChanges, OnInit, AfterViewC
   activityList: any[] = [];
   dummyLoginTimes: any[] = [];
 
+  formatDate(dateVal: any): string {
+    if (!dateVal) return '';
+    if (typeof dateVal === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateVal)) {
+      return dateVal.substring(0, 10);
+    }
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getISTNow(): { istDateStr: string; istHour: number } {
+    const now = new Date();
+    try {
+      const istDateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+      const istTimeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false });
+      const istHour = parseInt(istTimeStr.split(':')[0], 10);
+      if (istDateStr && !isNaN(istHour)) {
+        return { istDateStr, istHour };
+      }
+    } catch (e) {}
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const istDate = new Date(utcTime + (330 * 60000));
+    const year = istDate.getFullYear();
+    const month = String(istDate.getMonth() + 1).padStart(2, '0');
+    const day = String(istDate.getDate()).padStart(2, '0');
+    return {
+      istDateStr: `${year}-${month}-${day}`,
+      istHour: istDate.getHours()
+    };
+  }
+
   constructor(
     private service: MasterReportService,
     private cdr: ChangeDetectorRef
@@ -193,6 +227,15 @@ export class TimeSheetEditFormComponent implements OnChanges, OnInit, AfterViewC
       await this.dataGrid.instance.saveEditData();
     }
     
+    const targetDateStr = this.formatDate(this.newUserData.TimeSheetDate);
+    const { istDateStr, istHour } = this.getISTNow();
+
+    if (targetDateStr === istDateStr && istHour >= 23) {
+      notify({ message: "Today's Time is Over and you cannot update or add at that day.", position: { at: 'top right', my: 'top right' }, displayTime: 3000 }, 'error');
+      this.isSaving = false;
+      return;
+    }
+
     if (!this.validateForm()) {
       this.isSaving = false;
       return;

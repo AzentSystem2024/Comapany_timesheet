@@ -1,0 +1,518 @@
+<div class="calendar-page-container" [class.dark-theme]="isDarkTheme">
+  <!-- Top Bar: Breadcrumb, Title & Add Holiday Action -->
+  <div class="page-top-bar">
+    <div class="title-action-row">
+      <div class="title-group">
+        <div class="page-title grid-header">Holiday calendar</div>
+      </div>
+      <button *ngIf="isAdmin" type="button" class="add-holiday-btn" (click)="openAddHolidayPopup()">
+        <span class="plus-icon">+</span> Add Leave
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Layout: Left Calendar Grid + Right Upcoming Sidebar -->
+  <div class="calendar-layout-row">
+    <!-- Left Column: Calendar Card -->
+    <div class="calendar-main-col">
+      <div class="calendar-card">
+        <!-- Header: Month Title, Navigation & Upcoming Holidays Count -->
+        <div class="calendar-header">
+          <div class="header-left">
+            <h2 class="month-title">{{ monthYearString }}</h2>
+            <div class="nav-actions">
+              <button type="button" class="nav-arrow-btn" (click)="prevMonth()" aria-label="Previous month" title="Previous month">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <button type="button" class="nav-arrow-btn" (click)="nextMonth()" aria-label="Next month" title="Next month">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+              <button type="button" class="today-btn" (click)="goToToday()">
+                Today
+              </button>
+            </div>
+          </div>
+
+          <div class="header-right">
+            <span class="upcoming-summary">{{ upcomingCountText }}</span>
+          </div>
+        </div>
+
+        <!-- Calendar Body -->
+        <div class="calendar-body">
+          <!-- Weekday Columns -->
+          <div class="weekdays-grid">
+            <div 
+              *ngFor="let dayName of weekDays; let i = index" 
+              class="weekday-col" 
+              [class.sun-col]="i === 0"
+            >
+              {{ dayName }}
+            </div>
+          </div>
+
+          <!-- Month Day Cells -->
+          <div class="days-grid">
+            <div
+              *ngFor="let day of calendarDays"
+              class="day-cell"
+              [class.sun-cell]="day.isSunday"
+              [class.leave-cell]="day.isPermanentLeave"
+              [class.other-month]="!day.isCurrentMonth"
+              (click)="onSelectDate(day)"
+            >
+              <div class="cell-top-bar">
+                <span
+                  class="day-num"
+                  [class.is-today-circle]="day.isToday"
+                  [class.is-leave-num]="day.isPermanentLeave"
+                >
+                  {{ day.dayNumber }}
+                </span>
+                <span *ngIf="day.isToday" class="today-label">TODAY</span>
+              </div>
+
+              <div class="cell-events" *ngIf="day.events && day.events.length > 0">
+                <div
+                  *ngFor="let event of day.events"
+                  class="event-tag"
+                  [ngClass]="'type-' + event.type"
+                  [title]="event.title + ' (' + getEventTypeName(event.type) + ')'"
+                  (click)="onEventClick($event, event)"
+                >
+                  <span class="event-title">{{ event.title }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer: Legend & Info -->
+        <div class="calendar-footer">
+          <div class="legend-group">
+            <div class="legend-item">
+              <span class="legend-dot public-dot"></span>
+              <span class="legend-text">Public holiday</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot company-dot"></span>
+              <span class="legend-text">Company holiday</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot weekend-dot"></span>
+              <span class="legend-text">Weekly off / Permanent leave</span>
+            </div>
+          </div>
+
+          <div class="footer-note">
+            {{ selectedDateInfo || 'Select a date for details' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Sidebar with Upcoming Holidays & Info -->
+    <div class="calendar-sidebar-col">
+      <!-- Upcoming Holidays Card -->
+      <div class="upcoming-card">
+        <h3 class="upcoming-card-title">Upcoming holidays</h3>
+        <p class="upcoming-card-subtitle">A little time to look forward to.</p>
+
+        <div class="upcoming-list" *ngIf="upcomingHolidaysList && upcomingHolidaysList.length > 0">
+          <div *ngFor="let item of upcomingHolidaysList; let last = last" class="upcoming-item" [class.no-border]="last" (click)="openViewHoliday(item)" style="cursor: pointer;">
+            <div class="date-badge" [ngClass]="'badge-' + item.type">
+              <span class="badge-num">{{ item.dayNumber }}</span>
+              <span class="badge-mon">{{ item.monthStr }}</span>
+            </div>
+
+            <div class="item-content">
+              <h4 class="item-title">{{ item.title }}</h4>
+              <div class="item-date">{{ item.formattedDate }}</div>
+              <div class="item-meta">
+                <span class="meta-dot" [ngClass]="'meta-dot-' + item.type"></span>
+                <span class="meta-type" [ngClass]="'meta-type-' + item.type">{{ getEventTypeName(item.type) }}</span>
+              </div>
+              <div *ngIf="item.relativeLabel" class="item-relative">
+                {{ item.relativeLabel }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="upcoming-empty" *ngIf="!upcomingHolidaysList || upcomingHolidaysList.length === 0">
+          <div class="empty-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <p class="empty-title">No upcoming holidays</p>
+          <span class="empty-desc">Added holidays will appear here.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Holiday Popup -->
+  <dx-popup
+    [visible]="isAddHolidayPopupVisible"
+    [showTitle]="false"
+    [showCloseButton]="false"
+    [width]="480"
+    height="auto"
+    [dragEnabled]="false"
+    [hideOnOutsideClick]="true"
+    (onHiding)="closeAddHolidayPopup()"
+    [wrapperAttr]="{ class: 'add-holiday-popup-wrapper' + (isDarkTheme ? ' dark-theme' : '') }"
+  >
+    <div *dxTemplate="let data of 'content'" class="popup-modal-content">
+      <div class="popup-modal-header">
+        <h3 class="popup-modal-title">{{ isEditMode ? 'Edit Holiday' : 'Add Holiday' }}</h3>
+        <p class="popup-modal-sub">{{ isEditMode ? 'Update or delete holiday details' : 'Configure a new company or public holiday' }}</p>
+      </div>
+
+      <div class="popup-field">
+        <label class="popup-label">Holiday Name <span class="required">*</span></label>
+        <input
+          type="text"
+          class="popup-input"
+          [(ngModel)]="newHoliday.name"
+          placeholder="Year-end Break"
+        />
+      </div>
+
+      <div class="popup-field">
+        <label class="popup-label">Holiday Date <span class="required">*</span></label>
+        <input
+          type="date"
+          class="popup-input date-input"
+          [class.input-invalid]="getRegularHolidayWarning(newHoliday.date)"
+          [(ngModel)]="newHoliday.date"
+        />
+        <span *ngIf="getRegularHolidayWarning(newHoliday.date)" class="field-warning-text">
+          ⚠ {{ getRegularHolidayWarning(newHoliday.date) }}. Holidays cannot be scheduled on regular weekly offs.
+        </span>
+      </div>
+
+      <div class="popup-field">
+        <label class="popup-label">Holiday Type <span class="required">*</span></label>
+        <select class="popup-select" [(ngModel)]="newHoliday.type">
+          <option *ngFor="let opt of holidayTypeOptions" [value]="opt">{{ opt }}</option>
+        </select>
+      </div>
+
+      <div class="popup-field">
+        <label class="popup-label">Description</label>
+        <textarea
+          class="popup-textarea"
+          rows="3"
+          [(ngModel)]="newHoliday.description"
+          placeholder="A shared day to recharge before the year-end."
+        ></textarea>
+      </div>
+
+      <div class="popup-checkbox-row" (click)="newHoliday.repeatAnnually = !newHoliday.repeatAnnually">
+        <input
+          type="checkbox"
+          class="custom-check-input"
+          [(ngModel)]="newHoliday.repeatAnnually"
+          (click)="$event.stopPropagation()"
+        />
+        <div class="checkbox-text-group">
+          <span class="checkbox-title">Repeat Annually</span>
+          <span class="checkbox-subtext">Repeat on the same date each year.</span>
+        </div>
+      </div>
+
+      <div class="popup-action-footer">
+        <button *ngIf="isEditMode" type="button" class="popup-btn btn-delete" (click)="deleteCurrentHoliday()">
+          Delete
+        </button>
+        <div class="footer-right-buttons">
+          <button type="button" class="popup-btn btn-cancel" (click)="closeAddHolidayPopup()">
+            Cancel
+          </button>
+          <button type="button" class="popup-btn btn-save" (click)="saveNewHoliday()">
+            {{ isEditMode ? 'Update' : 'Save' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </dx-popup>
+
+  <!-- Leave Details Popup -->
+  <dx-popup
+    [visible]="isLeaveDetailsPopupVisible"
+    [showTitle]="false"
+    [showCloseButton]="false"
+    [width]="440"
+    height="auto"
+    [dragEnabled]="false"
+    [hideOnOutsideClick]="true"
+    (onHiding)="closeLeaveDetailsPopup()"
+    [wrapperAttr]="{ class: 'leave-details-popup-wrapper' + (isDarkTheme ? ' dark-theme' : '') }"
+  >
+    <div *dxTemplate="let data of 'content'">
+      <div class="popup-modal-content leave-details-content" *ngIf="selectedLeaveDay">
+        <div class="leave-popup-header">
+          <div class="leave-badge-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <div class="leave-header-text">
+            <h3 class="leave-popup-title">{{ selectedLeaveDay.leaveLabel || 'Weekly Off' }}</h3>
+            <p class="leave-popup-date">{{ formatFullDate(selectedLeaveDay.date) }}</p>
+          </div>
+        </div>
+
+        <div class="leave-info-list">
+          <div class="leave-info-row">
+            <span class="info-label">Day Type</span>
+            <span class="info-value leave-tag-red">Permanent Leave / Weekly Off</span>
+          </div>
+
+          <div class="leave-info-row">
+            <span class="info-label">Timesheet Requirement</span>
+            <span class="info-value">0 Hours (Non-Working Day)</span>
+          </div>
+
+          <div class="leave-info-row">
+            <span class="info-label">Applicable To</span>
+            <span class="info-value">All Company Employees</span>
+          </div>
+
+          <div class="leave-info-row" *ngIf="selectedLeaveDay.events && selectedLeaveDay.events.length > 0">
+            <span class="info-label">Scheduled Holiday</span>
+            <div class="info-value-events">
+              <span *ngFor="let ev of selectedLeaveDay.events" class="event-tag" [ngClass]="'type-' + ev.type">
+                {{ ev.title }} ({{ getEventTypeName(ev.type) }})
+              </span>
+            </div>
+          </div>
+
+          <div class="leave-note-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span>This day is permanently designated as a company non-working weekly off.</span>
+          </div>
+        </div>
+
+        <div class="popup-action-footer">
+          <button type="button" class="popup-btn btn-save" style="margin-left: auto;" (click)="closeLeaveDetailsPopup()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </dx-popup>
+
+  <!-- View Holiday Details Popup (Read-Only) -->
+  <dx-popup
+    [visible]="isViewHolidayPopupVisible"
+    [showTitle]="false"
+    [showCloseButton]="false"
+    [width]="450"
+    height="auto"
+    [dragEnabled]="false"
+    [hideOnOutsideClick]="true"
+    (onHiding)="closeViewHolidayPopup()"
+    [wrapperAttr]="{ class: 'holiday-view-popup-wrapper' + (isDarkTheme ? ' dark-theme' : '') }"
+  >
+    <div *dxTemplate="let data of 'content'">
+      <div class="popup-modal-content holiday-view-content" *ngIf="selectedHoliday">
+        <div class="holiday-view-header">
+          <div class="holiday-view-badge" [ngClass]="'badge-' + selectedHoliday.type">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <div class="holiday-view-title-group">
+            <h3 class="holiday-view-title">{{ selectedHoliday.title }}</h3>
+            <p class="holiday-view-date">{{ formatFullDateStr(selectedHoliday.dateStr) }}</p>
+          </div>
+          <button
+            type="button"
+            class="holiday-view-close-btn"
+            (click)="closeViewHolidayPopup()"
+            title="Close"
+            aria-label="Close"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="holiday-view-body">
+          <div class="holiday-view-row">
+            <span class="view-label">Holiday Type</span>
+            <span class="view-value-badge" [ngClass]="'type-' + selectedHoliday.type">
+              <span class="meta-dot" [ngClass]="'meta-dot-' + selectedHoliday.type"></span>
+              {{ getEventTypeName(selectedHoliday.type) }}
+            </span>
+          </div>
+
+          <div class="holiday-view-row">
+            <span class="view-label">Recurrence</span>
+            <span class="view-value">
+              {{ selectedHoliday.repeatAnnually ? 'Repeats Annually' : 'One-time Holiday' }}
+            </span>
+          </div>
+
+          <div class="holiday-view-desc-box">
+            <span class="desc-label">Description</span>
+            <p class="desc-text">
+              {{ selectedHoliday.description && selectedHoliday.description.trim() ? selectedHoliday.description : 'No additional description provided.' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="popup-action-footer" *ngIf="isAdmin">
+          <button type="button" class="popup-btn btn-delete" (click)="deleteFromView()">
+            Delete
+          </button>
+          <div class="footer-right-buttons">
+            <button type="button" class="popup-btn btn-edit-teal" (click)="switchToEditFromView()">
+              Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dx-popup>
+
+  <!-- Saturday Configuration / Shift Popup -->
+  <dx-popup
+    [visible]="isSaturdayPopupVisible"
+    [showTitle]="false"
+    [showCloseButton]="false"
+    [width]="460"
+    height="auto"
+    [dragEnabled]="false"
+    [hideOnOutsideClick]="true"
+    (onHiding)="closeSaturdayPopup()"
+    [wrapperAttr]="{ class: 'saturday-popup-wrapper' + (isDarkTheme ? ' dark-theme' : '') }"
+  >
+    <div *dxTemplate="let data of 'content'">
+      <div class="popup-modal-content saturday-modal-content" *ngIf="selectedSaturdayDay">
+        <div class="saturday-modal-header">
+          <div class="saturday-badge-icon" [class.is-off]="selectedSaturdayDay.isPermanentLeave">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <div class="saturday-title-group">
+            <h3 class="saturday-title">{{ selectedSaturdayDay.leaveLabel }}</h3>
+            <p class="saturday-date">{{ formatFullDate(selectedSaturdayDay.date) }}</p>
+          </div>
+          <button
+            type="button"
+            class="saturday-close-btn"
+            (click)="closeSaturdayPopup()"
+            title="Close"
+            aria-label="Close"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="saturday-modal-body">
+          <div class="saturday-info-row">
+            <span class="info-label">Current Status</span>
+            <span
+              class="saturday-status-badge"
+              [class.status-off]="selectedSaturdayDay.isPermanentLeave"
+              [class.status-working]="!selectedSaturdayDay.isPermanentLeave"
+            >
+              <span class="status-dot"></span>
+              {{ selectedSaturdayDay.isPermanentLeave ? 'Weekly Off (Leave Day)' : 'Working Day' }}
+            </span>
+          </div>
+
+          <div class="saturday-info-row">
+            <span class="info-label">Timesheet Hours</span>
+            <span class="info-value">
+              {{ selectedSaturdayDay.isPermanentLeave ? '0 Hours (Non-Working Day)' : 'Regular Working Hours' }}
+            </span>
+          </div>
+
+          <div class="saturday-info-row" *ngIf="selectedSaturdayDay.events && selectedSaturdayDay.events.length > 0">
+            <span class="info-label">Scheduled Holiday</span>
+            <div class="info-value-events">
+              <span *ngFor="let ev of selectedSaturdayDay.events" class="event-tag" [ngClass]="'type-' + ev.type">
+                {{ ev.title }} ({{ getEventTypeName(ev.type) }})
+              </span>
+            </div>
+          </div>
+
+          <div class="saturday-note-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span *ngIf="isAdmin">
+              {{ selectedSaturdayDay.isPermanentLeave
+                ? 'This Saturday is designated as Weekly Off (in Red). Click below to shift it to a Working Day.'
+                : 'This Saturday is currently a Working Day. Click below to add leave and mark it as Weekly Off (in Red).' }}
+            </span>
+            <span *ngIf="!isAdmin">
+              {{ selectedSaturdayDay.isPermanentLeave
+                ? 'This Saturday is designated as a Weekly Off.'
+                : 'This Saturday is designated as a Working Day.' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="popup-action-footer">
+          <button type="button" class="popup-btn btn-cancel" (click)="closeSaturdayPopup()">
+            Close
+          </button>
+          <div class="footer-right-buttons" *ngIf="isAdmin">
+            <button
+              *ngIf="selectedSaturdayDay.isPermanentLeave"
+              type="button"
+              class="popup-btn btn-make-working"
+              [disabled]="isUpdatingSaturday"
+              (click)="toggleSaturdayStatus(selectedSaturdayDay)"
+            >
+              {{ isUpdatingSaturday ? 'Updating...' : 'Mark as Working Day' }}
+            </button>
+            <button
+              *ngIf="!selectedSaturdayDay.isPermanentLeave"
+              type="button"
+              class="popup-btn btn-make-off"
+              [disabled]="isUpdatingSaturday"
+              (click)="toggleSaturdayStatus(selectedSaturdayDay)"
+            >
+              {{ isUpdatingSaturday ? 'Updating...' : 'Add Leave (Weekly Off)' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dx-popup>
+</div>
