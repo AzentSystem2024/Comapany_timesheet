@@ -1,29 +1,25 @@
 @use "../../../../variables.scss" as *;
 @use "sass:math";
 
+.page-heading-bar {
+    padding: 4px 2px 8px 2px;
+    margin-bottom: 6px;
+}
+
 .grid-header {
     @include header();
 }
 
-.filter-section {
+.static-filter-bar {
     display: flex;
-    justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 15px;
-    padding: 0;
-    border-radius: 8px;
-}
-
-.filter-group {
-    display: flex;
     gap: 15px;
-    align-items: flex-end;
+    padding: 0;
 }
 
 .filter-item {
     display: flex;
     flex-direction: column;
-    min-width: 150px;
 
     label {
         font-size: 12px;
@@ -38,37 +34,39 @@
 }
 
 .action-item {
-    margin-left: 15px;
+    display: flex;
+    align-items: flex-end;
+    margin-right: 10px;
 }
 
 .apply-btn {
-    min-width: 100px;
+    min-width: 90px;
 }
 
-::ng-deep .dx-datagrid-summary-item {
-    font-weight: bold;
+::ng-deep #attendanceGrid .dx-datagrid-header-panel {
+    margin-bottom: 14px !important;
+    border-bottom: none !important;
+
+    .dx-toolbar {
+        height: 68px !important;
+    }
+
+    .dx-toolbar-items-container {
+        height: 68px !important;
+    }
+
+    .dx-toolbar-before,
+    .dx-toolbar-after {
+        height: 68px !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        padding-bottom: 4px !important;
+    }
 }
 
 ::ng-deep .dx-button-success {
     background-color: #0087bd !important;
     color: white !important;
-}
-
-.SearchParams-container {
-    transition: transform 0.5s ease, opacity 0.8s ease, max-height 0.5s ease;
-    transform: translateY(0);
-    opacity: 1;
-    max-height: 500px;
-    margin-top: 10px;
-}
-
-.hide-content {
-    transform: translateY(-20px);
-    opacity: 0;
-    max-height: 0;
-    padding: 0;
-    margin: 0;
-    overflow: hidden;
 }
 
 /* Leave Badge */

@@ -1,35 +1,7 @@
 <div class="dx-card" style="padding: 10px; margin-top: -10px;">
-  <!-- Filter Parameters -->
-  <div class="paramsDiv SearchParams-container" [ngClass]="{ 'hide-content': !isContentVisible }">
-    <div class="filter-section">
-      <div class="filter-group">
-        <div class="filter-item">
-          <label>Year</label>
-          <dx-select-box [items]="years" [(value)]="selectedYear" (onValueChanged)="onYearChanged($event)">
-          </dx-select-box>
-        </div>
-
-        <div class="filter-item">
-          <label>Month</label>
-          <dx-select-box [items]="months" displayExpr="name" valueExpr="value" [(value)]="selectedMonth"
-            (onValueChanged)="onMonthChanged($event)">
-          </dx-select-box>
-        </div>
-      </div>
-
-      <div class="action-item">
-        <dx-button text="Apply" type="success" stylingMode="contained" (onClick)="applyFilter()" class="apply-btn">
-        </dx-button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toggle Filter View Button -->
-  <div class="button-container mt-1 mb-2 d-flex justify-content-center">
-    <dx-button class="toggleButton" icon="{{ isContentVisible ? 'chevronup' : 'chevrondown' }}" stylingMode="outlined"
-      type="normal" [hint]="isContentVisible ? 'Hide Filter Content' : 'Show Filter Field'" [width]="200" [height]="13"
-      (onClick)="toggleContent()">
-    </dx-button>
+  <!-- Top Page Heading -->
+  <div class="page-heading-bar">
+    <div class="grid-header">Attendance</div>
   </div>
 
   <!-- Attendance DataGrid -->
@@ -39,7 +11,7 @@
     [showBorders]="true"
     [columnAutoWidth]="true"
     [allowColumnReordering]="true"
-    height="calc(100vh - 210px)"
+    height="calc(100vh - 165px)"
   >
     <dxo-scrolling mode="standard" showScrollbar="always"></dxo-scrolling>
     <dxo-paging [enabled]="false"></dxo-paging>
@@ -53,9 +25,8 @@
     <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx']"></dxo-export>
 
     <dxo-toolbar>
-      <dxi-item location="before">
-        <div class="grid-header" style="margin-right: 20px;">Attendance</div>
-      </dxi-item>
+      <dxi-item location="before" template="filterTemplate" locateInMenu="never"></dxi-item>
+      <dxi-item location="after" template="applyTemplate" locateInMenu="never"></dxi-item>
       <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton" [options]="{
             icon: isFilterRowVisible ? 'filter' : 'filter',
             hint: isFilterRowVisible ? 'Hide Filter Row' : 'Show Filter Row',
@@ -72,6 +43,28 @@
       <dxi-item name="exportButton" location="after" cssClass="custom-export-button"></dxi-item>
       <dxi-item name="columnChooserButton" location="after"></dxi-item>
     </dxo-toolbar>
+
+    <!-- Static Filter Bar in Toolbar Position -->
+    <div *dxTemplate="let data of 'filterTemplate'" class="static-filter-bar">
+      <div class="filter-item">
+        <label>Year</label>
+        <dx-select-box [items]="years" [(value)]="selectedYear" (onValueChanged)="onYearChanged($event)" [width]="140">
+        </dx-select-box>
+      </div>
+
+      <div class="filter-item">
+        <label>Month</label>
+        <dx-select-box [items]="months" displayExpr="name" valueExpr="value" [(value)]="selectedMonth"
+          (onValueChanged)="onMonthChanged($event)" [width]="170">
+        </dx-select-box>
+      </div>
+    </div>
+
+    <!-- Apply Button right before toolbar icons -->
+    <div *dxTemplate="let data of 'applyTemplate'" class="action-item">
+      <dx-button text="Apply" type="success" stylingMode="contained" (onClick)="applyFilter()" class="apply-btn">
+      </dx-button>
+    </div>
 
     <!-- Table Columns: Employee Name, Total Working Days, Days Worked, Leave -->
     <dxi-column dataField="EmployeeName" caption="Employee Name" sortOrder="asc"></dxi-column>

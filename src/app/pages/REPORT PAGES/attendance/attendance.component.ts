@@ -20,7 +20,6 @@ export class AttendanceComponent implements OnInit {
   today: Date = new Date();
 
   isFilterRowVisible: boolean = false;
-  isContentVisible: boolean = true;
 
   constructor(private reportService: ReportService, private router: Router) {
     const currentYear = new Date().getFullYear();
@@ -58,16 +57,11 @@ export class AttendanceComponent implements OnInit {
     this.isFilterRowVisible = !this.isFilterRowVisible;
   };
 
-  toggleContent(): void {
-    this.isContentVisible = !this.isContentVisible;
-  }
-
   refresh = (): void => {
     this.fetchData();
   };
 
   applyFilter(): void {
-    this.isContentVisible = false;
     this.fetchData();
   }
 
