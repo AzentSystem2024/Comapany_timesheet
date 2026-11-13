@@ -46,12 +46,9 @@
       <dxi-item location="after" widget="dxButton" [options]="addButtonOptions"></dxi-item>
     </dxo-toolbar>
 
-    <dxi-column dataField="TimesheetDate" caption="Date" dataType="date" format="dd MMM yyyy" sortOrder="desc"
-      *ngIf="!isAdmin"></dxi-column>
-
     <dxi-column caption="Sl No" cellTemplate="serialNoTemplate" [width]="70"></dxi-column>
     <dxi-column dataField="EmployeeName" caption="Employee Name"></dxi-column>
-    <dxi-column dataField="TimesheetDate" caption="Timesheet Date" dataType="date" format="dd-MMM-yyyy"></dxi-column>
+    <dxi-column dataField="TimesheetDate" caption="Timesheet Date" dataType="date" format="dd-MMM-yyyy" sortOrder="desc"></dxi-column>
     <dxi-column dataField="Hours" caption="Total Hours" dataType="number" format="#,##0.00"
       alignment="left"></dxi-column>
     <dxi-column dataField="timeOfEntry" caption="Time of Entry" dataType="string"
