@@ -66,14 +66,21 @@
       </dx-button>
     </div>
 
-    <!-- Table Columns: Employee Name, Total Working Days, Days Worked, Leave -->
-    <dxi-column dataField="EmployeeName" caption="Employee Name" sortOrder="asc"></dxi-column>
-    <dxi-column dataField="ExpectedWorkingDaysToDate" caption="Total Working Days" dataType="number" alignment="center"></dxi-column>
-    <dxi-column dataField="DaysWorkedOnWorkingDays" caption="Days Worked" dataType="number" alignment="center"></dxi-column>
-    <dxi-column dataField="TotalLeaves" caption="Leave" alignment="center" cellTemplate="leaveTemplate"></dxi-column>
+    <!-- Table Columns: Employee Name, Total Working Days, Days Worked, Leave, Half Day -->
+    <dxi-column dataField="EmployeeName" caption="Employee Name" sortOrder="asc" [minWidth]="220"></dxi-column>
+    <dxi-column dataField="ExpectedWorkingDaysToDate" caption="Total Working Days" dataType="number" alignment="center" [width]="190"></dxi-column>
+    <dxi-column dataField="DaysWorkedOnWorkingDays" caption="Days Worked" dataType="number" alignment="center" [width]="170"></dxi-column>
+    <dxi-column dataField="TotalLeaves" caption="Leave" alignment="center" [width]="150" cellTemplate="leaveTemplate"></dxi-column>
+    <dxi-column dataField="HalfDays" caption="Half Day" dataType="number" alignment="center" [width]="150" cellTemplate="halfDayTemplate"></dxi-column>
 
     <div *dxTemplate="let cell of 'leaveTemplate'" style="text-align: center;">
       <span class="leave-badge" [class.has-leave]="cell.value > 0" [class.no-leave]="cell.value === 0">
+        {{ cell.value }}
+      </span>
+    </div>
+
+    <div *dxTemplate="let cell of 'halfDayTemplate'" style="text-align: center;">
+      <span class="half-day-badge" [class.has-half-day]="cell.value > 0" [class.no-half-day]="cell.value === 0">
         {{ cell.value }}
       </span>
     </div>

@@ -87,3 +87,21 @@
     }
 }
 
+/* Half Day Badge */
+.half-day-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+
+    &.has-half-day {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    &.no-half-day {
+        color: #16a34a;
+    }
+}
+
